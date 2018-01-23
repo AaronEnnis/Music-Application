@@ -115,24 +115,36 @@ def tuner(data):
     imin = max(0, int(np.floor(note_to_fftbin(NOTE_MIN-1))))
     imax = min(SAMPLES_PER_FFT, int(np.ceil(note_to_fftbin(NOTE_MAX+1))))
     
-    buf = np.zeros(len(data), dtype=np.float32) 
-   
-    # Create Hanning window function
-    window = 0.5 * (1 - np.cos(np.linspace(0, 2*np.pi, len(data), False)))
-    # Print initial text
     print ('sampling at', FSAMP, 'Hz with max resolution of', FREQ_STEP, 'Hz')
-    count = 0
-    for i in data: 
-        buf[count] = i
-        count += 1
-    num = 0 
-    z = np.zeros((len(data)), dtype=np.int)
-    while num < 500:
-        buf[:-FRAME_SIZE] = buf[FRAME_SIZE:]
-        buf[-FRAME_SIZE:] = z[-FRAME_SIZE:]
+    
+#    def chunkIt(data, frame_size):
+#        avg = len(data) / float(frame_size)
+#        out = []
+#        last = 0.0
+#
+#        while last < len(data):
+#            out.append(data[int(last):int(last + avg)])
+#            last += avg
+#    
+#        return out
+    
+    def chunks(data, frame_size):
+        for i in range(0, len(data), frame_size):
+            return data[i:i + frame_size]
+    
+    buf = chunks(data,FRAME_SIZE)
+    window_buf = np.zeros(SAMPLES_PER_FFT, dtype=np.float32)
+    num = 0
+    window = 0.5 * (1 - np.cos(np.linspace(0, 2*np.pi, SAMPLES_PER_FFT, False)))
+
+    while num < SAMPLES_PER_FFT:
+         
+        window_buf[:-FRAME_SIZE] = window_buf[FRAME_SIZE:]
+        window_buf[-FRAME_SIZE:] = buf[num]
         # Run the FFT on the windowed buffer
         fft = np.fft.rfft(buf * window)
-            # Get frequency of maximum response in range
+
+        # Get frequency of maximum response in range
         freq = (np.abs(fft[imin:imax]).argmax() + imin) * FREQ_STEP
     
         # Get note number and nearest note
@@ -142,10 +154,7 @@ def tuner(data):
         num += 1
         print ('freq: {:7.2f} Hz     note: {:>3s}'.format(
             freq, note_name(n0)))
-
-
-
-
+        
 
 
 
