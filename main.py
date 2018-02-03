@@ -7,14 +7,20 @@
 ## transcribes the notes to tabliture form and displays it.
 #______________________________________________________________________________
 
-import wave, struct
+import wave, struct, os, time
 import scipy.io.wavfile
 import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
+from sys import byteorder
+from array import array
+from struct import pack
 
 a4 = 'a4'
 rateA4, dataA4 = scipy.io.wavfile.read('a4.wav')
+
+recording = 'recording'
+rateRecording, dataRecording = scipy.io.wavfile.read('recording.wav')
 
 g4 = 'g4'
 rateG4, dataG4 = scipy.io.wavfile.read('g4.wav')
@@ -27,6 +33,7 @@ rateBeep, dataBeep = scipy.io.wavfile.read('beep.wav')
 
 siren = 'siren'
 rateSiren, dataSiren = scipy.io.wavfile.read('siren.wav')
+
 
 def getData(data): #elements in data (16-bit PCM	-32768	+32767	int16)
     for i in data:
@@ -96,6 +103,68 @@ def display(data):
     
     plt.plot(data)     
     plt.show()
+    
+def record():
+    CHUNK_SIZE = 1024
+    FORMAT = pyaudio.paInt16
+    RATE = 44100
+
+    def normalize(snd_data):
+        #Average the volume out"
+        MAXIMUM = 16384
+        times = float(MAXIMUM)/max(abs(i) for i in snd_data)
+
+        r = array('h')
+        for i in snd_data:
+            r.append(int(i*times))
+        return r
+    
+
+    def recording():
+
+        p = pyaudio.PyAudio()
+        stream = p.open(format=FORMAT, channels=1, rate=RATE,
+            input=True, output=True,
+            frames_per_buffer=CHUNK_SIZE)
+
+        start = time.time()
+        time.clock()    
+        elapsed = 0
+        r = array('h')
+
+        while elapsed < 1:
+            
+            elapsed = time.time() - start
+            
+            # little endian, signed short
+            snd_data = array('h', stream.read(CHUNK_SIZE))
+            if byteorder == 'big':
+                snd_data.byteswap()
+            r.extend(snd_data)
+            
+
+        sample_width = p.get_sample_size(FORMAT)
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+
+        r = normalize(r)
+        return sample_width, r
+
+    def record_to_file(path):
+        #Records from the microphone and outputs the resulting data to 'path'
+        sample_width, data = recording()
+        data = pack('<' + ('h'*len(data)), *data)
+
+        wf = wave.open(path, 'wb')
+        wf.setnchannels(1)
+        wf.setsampwidth(sample_width)
+        wf.setframerate(RATE)
+        wf.writeframes(data)
+        wf.close()
+    path = os.path.join('C:/Users/aaron/Desktop/Music-Application','recording.wav')
+    record_to_file(path)
+
 
 def tuner(data):
     
@@ -112,114 +181,30 @@ def tuner(data):
         for i in range(0, len(data), frame_size):
             yield data[i:i + frame_size]
     
-    buf = chunks(data,2048)
+    buf = chunks(data,22050)
     window_buf = []
+    index = -1
     for i in buf:
         window_buf.append(i)
 
     for j in window_buf:
         # Run the FFT on the windowed buffer
         fft = np.fft.fft(j)
+        #display(fft)
         # Get frequency of maximum response in range
         freqs = np.fft.fftfreq(len(fft))
         idx = np.argmax(np.abs(fft))
         for k in freqs:            
             freq = freqs[idx]
             freq_in_hertz = abs(freq * 11025)
-            if freq_in_hertz >= 1:
+            if freq_in_hertz >= 27:
                 n = freq_to_number(np.floor(freq_in_hertz))
                 n0 = int(round(n))
                 print('freq: {:7.2f} Hz     note: {:>3s} {:+.2f}'.format(
                         freq_in_hertz, note_name(n0), n-n0))
+                break
+            else:
+                print('-------------------')
+                break
+        index += 1
         
-    
-    
-
-        
-
-
-
-
-#def liveTuner():
-#    
-#    NOTE_MIN = 40       # E2
-#    NOTE_MAX = 84       # C6
-#    FSAMP = 22050       # Sampling frequency in Hz
-#    FRAME_SIZE = 2048   # How many samples per frame?
-#    FRAMES_PER_FFT = 16 # FFT takes average across how many frames?
-#    
-#    ######################################################################
-#    # Derived quantities from constants above. Note that as
-#    # SAMPLES_PER_FFT goes up, the frequency step size decreases (so
-#    # resolution increases); however, it will incur more delay to process
-#    # new sounds.
-#    
-#    SAMPLES_PER_FFT = FRAME_SIZE*FRAMES_PER_FFT
-#    FREQ_STEP = float(FSAMP)/SAMPLES_PER_FFT
-#    
-#    ######################################################################
-#    # For printing out notes
-#    
-#    NOTE_NAMES = 'C C# D D# E F F# G G# A A# B'.split()
-#    
-#    ######################################################################
-#    # These three functions are based upon this very useful webpage:
-#    # https://newt.phys.unsw.edu.au/jw/notes.html
-#    
-#    def freq_to_number(f): return 69 + 12*np.log2(f/440.0)
-#    def number_to_freq(n): return 440 * 2.0**((n-69)/12.0)
-#    def note_name(n): return NOTE_NAMES[n % 12] + str(n/12 - 1)
-#    
-#    ######################################################################
-#    # Ok, ready to go now.
-#    
-#    # Get min/max index within FFT of notes we care about.
-#    # See docs for numpy.rfftfreq()
-#    def note_to_fftbin(n): return number_to_freq(n)/FREQ_STEP
-#    imin = max(0, int(np.floor(note_to_fftbin(NOTE_MIN-1))))
-#    imax = min(SAMPLES_PER_FFT, int(np.ceil(note_to_fftbin(NOTE_MAX+1))))
-#    
-#    # Allocate space to run an FFT. 
-#    buf = np.zeros(SAMPLES_PER_FFT, dtype=np.float32)
-#    num_frames = 0
-#    
-#    # Initialize audio
-#    stream = pyaudio.PyAudio().open(format=pyaudio.paInt16,
-#                                    channels=1,
-#                                    rate=FSAMP,
-#                                    input=True,
-#                                    frames_per_buffer=FRAME_SIZE)
-#    
-#    stream.start_stream()
-#    
-#    # Create Hanning window function
-#    window = 0.5 * (1 - np.cos(np.linspace(0, 2*np.pi, SAMPLES_PER_FFT, False)))
-#    
-#    # Print initial text
-#    print ('sampling at ', FSAMP, 'Hz with max resolution of ', FREQ_STEP, 'Hz')
-#    print('')
-#    
-#    # As long as we are getting data:
-#    while stream.is_active():
-#    
-#        # Shift the buffer down and new data in
-#        buf[:-FRAME_SIZE] = buf[FRAME_SIZE:]
-#        buf[-FRAME_SIZE:] = np.fromstring(stream.read(FRAME_SIZE), np.int16)
-#
-#        # Run the FFT on the windowed buffer
-#        fft = np.fft.rfft(buf * window)
-#    
-#        # Get frequency of maximum response in range
-#        freq = (np.abs(fft[imin:imax]).argmax() + imin) * FREQ_STEP
-#
-#        # Get note number and nearest note
-#        n = freq_to_number(freq)
-#        n0 = int(round(n))
-#    
-#        # Console output once we have a full buffer
-#        num_frames += 1
-#    
-#        if num_frames >= FRAMES_PER_FFT:
-#            print('freq: {:7.2f} Hz     note: {:>3s} {:+.2f}'.format(
-#                freq, note_name(n0), n-n0))
-#                
