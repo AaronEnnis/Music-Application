@@ -7,32 +7,55 @@
 ## transcribes the notes to tabliture form and displays it.
 #______________________________________________________________________________
 
-import wave, struct, os, time
+import wave, struct, os, time, math
 import scipy.io.wavfile
 import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import signal
 from sys import byteorder
 from array import array
 from struct import pack
 
-a4 = 'a4'
-rateA4, dataA4 = scipy.io.wavfile.read('a4.wav')
-
+paul = 'paul'
+ratePaul, dataPaul = scipy.io.wavfile.read('paul.wav')
 recording = 'recording'
 rateRecording, dataRecording = scipy.io.wavfile.read('recording.wav')
+E = 'E'
+rateE, dataE = scipy.io.wavfile.read('E.wav')
+A = 'A'
+rateA, dataA = scipy.io.wavfile.read('A.wav')
+D = 'D'
+rateD, dataD = scipy.io.wavfile.read('D.wav')
+G = 'G'
+rateG, dataG = scipy.io.wavfile.read('G.wav')
+B = 'B'
+rateB, dataB = scipy.io.wavfile.read('B.wav')
+highE = 'highE'
+ratehighE, datahighE = scipy.io.wavfile.read('highE.wav')
+#############################################################################################
+FSAMP = 22050.0       # Sampling frequency in Hz    
+NOTE_NAMES = 'C C# D D# E F F# G G# A A# B'.split()
 
-g4 = 'g4'
-rateG4, dataG4 = scipy.io.wavfile.read('g4.wav')
+def freq_to_number(f): return 69 + 12*np.log2(f/440.0)
+def note_name(n): return NOTE_NAMES[n % 12] + str(round(n/12 - 1))  #note and octave
 
-tone = 'tone'
-rateTone, dataTone = scipy.io.wavfile.read('tone.wav')
+def freq_from_fft(sig, fs):
+    """
+    Get fft of a signal
+    """
+    # Compute Fourier transform of windowed signal
+    windowed = sig * signal.blackmanharris(len(sig))
+    f = np.fft.rfft(windowed)
 
-beep = 'beep'
-rateBeep, dataBeep = scipy.io.wavfile.read('beep.wav')
+    # Find the peak and interpolate to get a more accurate peak
+    i = np.argmax(abs(f))  # Just use this for less-accurate, naive version
+    #true_i = parabolic(log(abs(f)), i)[0]
+    
+    # Convert to equivalent frequency
+    return fs * i / len(windowed)
 
-siren = 'siren'
-rateSiren, dataSiren = scipy.io.wavfile.read('siren.wav')
+
 
 
 def getData(data): #elements in data (16-bit PCM	-32768	+32767	int16)
@@ -100,9 +123,9 @@ def playAudio(_file):
     p.terminate() 
     
 def display(data):
-    
     plt.plot(data)     
     plt.show()
+       
     
 def record():
     CHUNK_SIZE = 1024
@@ -121,7 +144,7 @@ def record():
     
 
     def recording():
-
+        #creates WAV file with these parameters
         p = pyaudio.PyAudio()
         stream = p.open(format=FORMAT, channels=1, rate=RATE,
             input=True, output=True,
@@ -131,11 +154,10 @@ def record():
         time.clock()    
         elapsed = 0
         r = array('h')
-
-        while elapsed < 1:
-            
-            elapsed = time.time() - start
-            
+        print('recording')
+        #records for x amount of seconds
+        while elapsed < 10:           
+            elapsed = time.time() - start          
             # little endian, signed short
             snd_data = array('h', stream.read(CHUNK_SIZE))
             if byteorder == 'big':
@@ -166,45 +188,29 @@ def record():
     record_to_file(path)
 
 
-def tuner(data):
-    
-    NOTE_NAMES = 'C C# D D# E F F# G G# A A# B'.split()
-    
-    def freq_to_number(f): return 69 + 12*np.log2(f/440.0)
-    def note_name(n): return NOTE_NAMES[n % 12] + str(round(n/12 - 2))  #note and octave
-
-    
-    print ('sampling at', 22050, 'Hz with max resolution of', 0.67291259765625, 'Hz')
+def tuner(data):   
+    print ('sampling at', FSAMP)
 
     #split the audio data in to even chunks
     def chunks(data, frame_size):
         for i in range(0, len(data), frame_size):
             yield data[i:i + frame_size]
+    #creates chunks of 1/4 of a second of audio
+    buf = chunks(data,round(FSAMP/2))
+    window_buf = []  
     
-    buf = chunks(data,22050)
-    window_buf = []
-    index = -1
     for i in buf:
         window_buf.append(i)
 
     for j in window_buf:
-        # Run the FFT on the windowed buffer
-        fft = np.fft.fft(j)
-        #display(fft)
-        # Get frequency of maximum response in range
-        freqs = np.fft.fftfreq(len(fft))
-        idx = np.argmax(np.abs(fft))
-        for k in freqs:            
-            freq = freqs[idx]
-            freq_in_hertz = abs(freq * 11025)
-            if freq_in_hertz >= 27:
-                n = freq_to_number(np.floor(freq_in_hertz))
-                n0 = int(round(n))
-                print('freq: {:7.2f} Hz     note: {:>3s} {:+.2f}'.format(
-                        freq_in_hertz, note_name(n0), n-n0))
-                break
-            else:
-                print('-------------------')
-                break
-        index += 1
+
+        freq = freq_from_fft(j,44100)
         
+        if freq >= 27:
+            n = freq_to_number(np.floor(freq))
+            n0 = int(round(n))
+            print('freq: ',round(freq),note_name(n0))
+            
+        else:
+            print('-------------------')
+                    
