@@ -7,15 +7,17 @@
 ## transcribes the notes to tabliture form and displays it.
 #______________________________________________________________________________
 
-import wave, struct, os, time, math
+import wave, struct, os, time
 import scipy.io.wavfile
 import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
+#import parabolic
 from scipy import signal
 from sys import byteorder
 from array import array
 from struct import pack
+from numpy import polyfit, arange
 
 paul = 'paul'
 ratePaul, dataPaul = scipy.io.wavfile.read('paul.wav')
@@ -38,11 +40,34 @@ FSAMP = 22050.0       # Sampling frequency in Hz
 NOTE_NAMES = 'C C# D D# E F F# G G# A A# B'.split()
 
 def freq_to_number(f): return 69 + 12*np.log2(f/440.0)
-def note_name(n): return NOTE_NAMES[n % 12] + str(round(n/12 - 1))  #note and octave
+def note_name(n): return NOTE_NAMES[n % 12] + str(np.floor(n/12 - 1))  #note and octave
+def parabolic(f, x):
+    """Quadratic interpolation for estimating the true position of an
+    inter-sample maximum when nearby samples are known.
+   
+    f is a vector and x is an index for that vector.
+   
+    Returns (vx, vy), the coordinates of the vertex of a parabola that goes
+    through point x and its two neighbors.
+   
+    Example:
+    Defining a vector f with a local maximum at index 3 (= 6), find local
+    maximum if points 2, 3, and 4 actually defined a parabola.
+   
+    In [3]: f = [2, 3, 1, 6, 4, 2, 3, 1]
+   
+    In [4]: parabolic(f, argmax(f))
+    Out[4]: (3.2142857142857144, 6.1607142857142856)
+   
+    """
+    xv = 1/2. * (f[x-1] - f[x+1]) / (f[x-1] - 2 * f[x] + f[x+1]) + x
+    yv = f[x] - 1/4. * (f[x-1] - f[x+1]) * (xv - x)
+    return (xv, yv)
+
 
 def freq_from_fft(sig, fs):
     """
-    Get fft of a signal
+    Estimate frequency from peak of FFT
     """
     # Compute Fourier transform of windowed signal
     windowed = sig * signal.blackmanharris(len(sig))
@@ -50,10 +75,10 @@ def freq_from_fft(sig, fs):
 
     # Find the peak and interpolate to get a more accurate peak
     i = np.argmax(abs(f))  # Just use this for less-accurate, naive version
-    #true_i = parabolic(log(abs(f)), i)[0]
-    
+    true_i = parabolic(np.log(abs(f)), i)[0]
+
     # Convert to equivalent frequency
-    return fs * i / len(windowed)
+    return fs * true_i / len(windowed)
 
 
 
@@ -213,4 +238,139 @@ def tuner(data):
             
         else:
             print('-------------------')
-                    
+
+
+def func():            
+    NOTE_MIN = 21     
+    NOTE_MAX = 108      
+    FSAMP = 22050       # Sampling frequency in Hz
+    FRAME_SIZE = 2048   # How many samples per frame?
+    FRAMES_PER_FFT = 16 # FFT takes average across how many frames?
+    
+    ######################################################################
+    # Derived quantities from constants above. Note that as
+    # SAMPLES_PER_FFT goes up, the frequency step size decreases (so
+    # resolution increases); however, it will incur more delay to process
+    # new sounds.
+    
+    SAMPLES_PER_FFT = FRAME_SIZE*FRAMES_PER_FFT
+    FREQ_STEP = float(FSAMP)/SAMPLES_PER_FFT
+    
+    ######################################################################
+    # For printing out notes
+    
+    NOTE_NAMES = 'C C# D D# E F F# G G# A A# B'.split()
+    
+    ######################################################################
+    # These three functions are based upon this very useful webpage:
+    # https://newt.phys.unsw.edu.au/jw/notes.html
+    
+    def freq_to_number(f): return 69 + 12*np.log2(f/440.0)
+    def number_to_freq(n): return 440 * 2.0**((n-69)/12.0)
+    def note_name(n): return NOTE_NAMES[n % 12] + str(np.floor(n/12 - 1))
+    
+    ######################################################################
+    # Ok, ready to go now.
+    
+    # Get min/max index within FFT of notes we care about.
+    # See docs for numpy.rfftfreq()
+    def note_to_fftbin(n): return number_to_freq(n)/FREQ_STEP
+    imin = max(0, int(np.floor(note_to_fftbin(NOTE_MIN-1))))
+    imax = min(SAMPLES_PER_FFT, int(np.ceil(note_to_fftbin(NOTE_MAX+1))))
+    
+    # Allocate space to run an FFT. 
+    buf = np.zeros(SAMPLES_PER_FFT, dtype=np.float32)
+    num_frames = 0
+    
+    def normalize(snd_data):
+        #Average the volume out"
+        MAXIMUM = 16384
+        times = float(MAXIMUM)/max(abs(i) for i in snd_data)
+
+        r = array('h')
+        for i in snd_data:
+            r.append(int(i*times))
+        return r
+
+    def record_to_file(path,data,sW):
+        #Records from the microphone and outputs the resulting data to 'path'
+        data = pack('<' + ('h'*len(data)), *data)
+
+        wf = wave.open(path, 'wb')
+        wf.setnchannels(1)
+        wf.setsampwidth(sW)
+        wf.setframerate(FSAMP)
+        wf.writeframes(data)
+        wf.close()
+    
+    p = pyaudio.PyAudio()    
+    # Initialize audio
+    stream = p.open(format=pyaudio.paInt16,
+                                    channels=1,
+                                    rate=FSAMP,
+                                    input=True,
+                                    frames_per_buffer=FRAME_SIZE)
+    
+    
+    # Create Hanning window function
+    window = 0.5 * (1 - np.cos(np.linspace(0, 2*np.pi, SAMPLES_PER_FFT, False)))
+    
+    # Print initial text
+    print ('sampling at', FSAMP, 'Hz with max resolution of', FREQ_STEP, 'Hz')
+    
+    stream.start_stream()    
+    # As long as we are getting data:
+    start = time.time()
+    time.clock()    
+    elapsed = 0
+    r = array('h')
+    notes = []
+    print('recording')
+    #records for x amount of seconds
+    while elapsed < 10:
+        elapsed = time.time() - start 
+        read = np.fromstring(stream.read(FRAME_SIZE), np.int16)
+        # Shift the buffer down and new data in
+        buf[:-FRAME_SIZE] = buf[FRAME_SIZE:]
+        buf[-FRAME_SIZE:] = read
+        snd_data = array('h', read)
+
+        r.extend(snd_data)
+    
+        # Run the FFT on the windowed buffer
+        fft = np.fft.rfft(buf * window)
+    
+        # Get frequency of maximum response in range
+        freq = (np.abs(fft[imin:imax]).argmax() + imin) * FREQ_STEP
+    
+        # Get note number and nearest note
+        n = freq_to_number(freq)
+        n0 = int(round(n))
+    
+        # Console output once we have a full buffer
+        num_frames += 1
+    
+        #if num_frames >= FRAMES_PER_FFT:
+        print ('freq: ', freq, '  ', note_name(n0))
+        notes.append(note_name(n0))
+    
+    sample_width = p.get_sample_size(pyaudio.paInt16)
+    stream.stop_stream()
+    stream.close()
+    p.terminate() 
+    r = normalize(r)
+
+    path = os.path.join('C:/Users/aaron/Desktop/Music-Application','recording.wav')
+    record_to_file(path,r,sample_width)
+    print(notes)
+    #roughly the note being played every half a second    
+    c = 0  
+    for i in notes:
+        if c == 7:
+            print(i)
+            c = 0
+        c += 1
+
+
+
+                
