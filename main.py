@@ -147,8 +147,10 @@ def playAudio(_file):
     #close PyAudio  
     p.terminate() 
     
-def display(data):
-    plt.plot(data)     
+def display(data,sec):
+    
+    t = np.linspace(0, sec, len(data))   
+    plt.plot(t,data)    
     plt.show()
        
     
@@ -335,33 +337,42 @@ def func():
     elapsed = 0
     r = array('h')
     notes = []
+    num_frames = 0
     print('recording')
     #records for x amount of seconds
-    while elapsed < 10:
+    while elapsed < 5:
         elapsed = time.time() - start 
         read = np.fromstring(stream.read(FRAME_SIZE), np.int16)
         # Shift the buffer down and new data in
         buf[:-FRAME_SIZE] = buf[FRAME_SIZE:]
         buf[-FRAME_SIZE:] = read
+
         snd_data = array('h', read)
 
         r.extend(snd_data)
-    
-        # Run the FFT on the windowed buffer
-        fft = np.fft.rfft(buf * window)
-    
-        # Get frequency of maximum response in range
-        freq = (np.abs(fft[imin:imax]).argmax() + imin) * FREQ_STEP
-
-        # Get note number and nearest note
-        n = freq_to_number(freq)
-        n0 = int(round(n))
-    
-        # Console output once we have a full buffer
+        idx = np.abs(buf).argmax()
+        
         num_frames += 1
-
-        print ('freq: ', freq, '  ', note_name(n0))
-        notes.append(note_name(n0))
+        
+        if num_frames > FRAMES_PER_FFT:
+            if buf[idx] > 50:
+                # Run the FFT on the windowed buffer
+                fft = np.fft.rfft(buf * window)
+            
+                # Get frequency of maximum response in range
+                freq = (np.abs(fft[imin:imax]).argmax() + imin) * FREQ_STEP
+            
+                # Get note number and nearest note
+                n = freq_to_number(freq)
+                n0 = int(round(n))
+            
+                # Console output once we have a full buffer
+                num_frames += 1
+            
+                print ('freq: ', freq, '  ', note_name(n0))
+                notes.append(note_name(n0))
+            else:
+                notes.append('---')
     
     sample_width = p.get_sample_size(pyaudio.paInt16)
     stream.stop_stream()
@@ -374,6 +385,7 @@ def func():
 
     #roughly the note being played every half a second    
     num_of_notes = len(notes) 
+    print(notes)
     notes_per_sec = num_of_notes / elapsed
     note_per_hsec = notes_per_sec / 2
     c = 1
@@ -385,9 +397,3 @@ def func():
             p += 1
         c += 1
         
-    print(p)
-        
-
-
-
-                
