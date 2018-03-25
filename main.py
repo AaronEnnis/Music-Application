@@ -7,7 +7,7 @@
 ## transcribes the notes to tabliture form and displays it.
 #______________________________________________________________________________
 
-import wave, struct, os, time
+import wave, struct, os, time, json
 import scipy.io.wavfile
 import pyaudio
 import numpy as np
@@ -17,16 +17,20 @@ from struct import pack
 
 #elements in data (16-bit PCM	-32768	+32767	int16)
 def getData(_file): 
+    #Current working dir
+    cwd = os.getcwd()
     file = _file + '.wav'
-    root = 'C:/Users/aaron/Desktop/Music-Application/Recordings'
-    rate, data = scipy.io.wavfile.read(os.path.join(root, file))
+    rate, data = scipy.io.wavfile.read(os.path.join(cwd + '\Recordings', file))
     for i in data:
         print(i)
 
 def info(_file):
-    
-    file = _file + ".wav"
-    f = wave.open(file, 'rb')
+    #Current working dir
+    cwd = os.getcwd()  
+    file = _file + ".wav" 
+    file_path = os.path.join(cwd + '\Recordings', file)    
+    #open a wav format music  
+    f = wave.open(file_path,"rb")  
 
     print("channels")
     print(f.getnchannels()) ##Returns number of audio channels (1 for mono, 2 for stereo).
@@ -54,13 +58,18 @@ def info(_file):
     
 #plays audio
 def playAudio(_file):
-    #define stream chunk   
-    chunk = 1024  
-    
+    #Current working dir
+    cwd = os.getcwd()  
     file = _file + ".wav"
+  
+    file_path = os.path.join(cwd + '\Recordings', file)
     
     #open a wav format music  
-    f = wave.open('C:/Users/aaron/Desktop/Music-Application/Recordings/' + file,"rb")  
+    f = wave.open(file_path,"rb")  
+    
+    #define stream chunk   
+    chunk = 1024 
+    
     #instantiate PyAudio  
     p = pyaudio.PyAudio()  
     #open stream  
@@ -85,15 +94,19 @@ def playAudio(_file):
 
 #Displays audio data to graph    
 def display(_file,sec):
+    #Current working dir
+    cwd = os.getcwd()
     file = _file + '.wav'
-    root = 'C:/Users/aaron/Desktop/Music-Application/Recordings'
-    rate, data = scipy.io.wavfile.read(os.path.join(root, file))
+    rate, data = scipy.io.wavfile.read(os.path.join(cwd + '\Recordings', file))
     t = np.linspace(0, sec, len(data))   
     plt.plot(t,data)    
     plt.show()
        
 
-def func():          
+def func(): 
+    #Current working dir
+    cwd = os.getcwd()  
+       
     NOTE_MIN = 40       # E2
     NOTE_MAX = 76       # E4
     FSAMP = 22050       # Sampling frequency in Hz
@@ -229,29 +242,37 @@ def func():
     r = r[len(normalize_data):] 
     file = input('File name? ')
     file = file + '.wav'
-    existing_files = os.listdir("C:/Users/aaron/Desktop/Music-Application/Recordings")
+    existing_files = os.listdir(cwd + "\Recordings")
     
     while file in existing_files:
             print('This file name already in use!')
             file = input('File name? ')
             file = file + '.wav'
             
-    path = os.path.join('C:/Users/aaron/Desktop/Music-Application/Recordings', file)
+
+    path = os.path.join(cwd + '\Recordings', file)
     record_to_file(path,r,sample_width)
-
-    print(notes)
-    print(len(notes))
-
-    #roughly the note being played every half a second    
-#    num_of_notes = len(notes) 
-#    notes_per_sec = num_of_notes / np.floor(elapsed)
-#    note_per_hsec = notes_per_sec / 2
-#    c = 1
-#    p = 1
-#    for i in notes:
-#        if c == np.floor(note_per_hsec):
-#            print(i)
-#            c = 0
-#            p += 1
-#        c += 1
-#        
+    
+    cwd = cwd + '\Tabs'    
+    existing_files = os.listdir(cwd)
+  
+    json_data = {}
+    json_data[file] = notes
+    
+    if len(existing_files) == 0:
+        #Write notes to JSON
+        with open(os.path.join(cwd, 'tabs.json'), 'w') as f:
+            json.dump(json_data, f)
+        print(notes)
+    else:
+        #Open JSON file
+        with open(os.path.join(cwd, 'tabs.json'), 'r') as f:
+            data = json.load(f) 
+            
+        data.update(json_data)
+        
+        with open(os.path.join(cwd, 'tabs.json'), 'w') as f:
+            json.dump(data, f)
+        
+        print(data)
+     
