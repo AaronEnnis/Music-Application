@@ -19,89 +19,103 @@ from struct import pack
 def getData(_file): 
     #Current working dir
     cwd = os.getcwd()
+    existing_files = os.listdir(cwd + '\Recordings')
     file = _file + '.wav'
-    rate, data = scipy.io.wavfile.read(os.path.join(cwd + '\Recordings', file))
-    for i in data:
-        print(i)
+    if file in existing_files:
+        rate, data = scipy.io.wavfile.read(os.path.join(cwd + '\Recordings', file))
+        for i in data:
+            print(i)
+    else:
+        print('This file does not exist')
 
 def info(_file):
     #Current working dir
     cwd = os.getcwd()  
+    existing_files = os.listdir(cwd + '\Recordings')
     file = _file + ".wav" 
-    file_path = os.path.join(cwd + '\Recordings', file)    
-    #open a wav format music  
-    f = wave.open(file_path,"rb")  
-
-    print("channels")
-    print(f.getnchannels()) ##Returns number of audio channels (1 for mono, 2 for stereo).
-    print(" ")
-    print("get samp width")
-    print(f.getsampwidth()) ##Returns sample width in bytes.
-    print(" ")
-    print("get frame rate(sample rate)")
-    print(f.getframerate()) ##Returns sampling frequency
-    print(" ")
-    print("get n frames(number of samples)")
-    print(f.getnframes()) ##Returns number of audio frames.
-    print(" ")
-    print("lenght of audio in seconds ")
-    print(f.getnframes() / f.getframerate())
-    print(" ")
-    print("get file params")
-    print(f.getparams()) ##Returns a namedtuple() (nchannels, sampwidth, framerate, nframes, comptype, compname), equivalent to output of the get*() methods.
-    print(" ")
-    wave_data = f.readframes(1) ##Reads and returns at most n frames of audio, as a bytes object.
-    print(wave_data)
-    print(struct.unpack("hh", b"\x00\x00\x00\x00"))
-
-    f.close()
+    if file in existing_files:
+        file_path = os.path.join(cwd + '\Recordings', file)    
+        #open a wav format music  
+        f = wave.open(file_path,"rb")  
+    
+        print("channels")
+        print(f.getnchannels()) ##Returns number of audio channels (1 for mono, 2 for stereo).
+        print(" ")
+        print("get samp width")
+        print(f.getsampwidth()) ##Returns sample width in bytes.
+        print(" ")
+        print("get frame rate(sample rate)")
+        print(f.getframerate()) ##Returns sampling frequency
+        print(" ")
+        print("get n frames(number of samples)")
+        print(f.getnframes()) ##Returns number of audio frames.
+        print(" ")
+        print("lenght of audio in seconds ")
+        print(f.getnframes() / f.getframerate())
+        print(" ")
+        print("get file params")
+        print(f.getparams()) ##Returns a namedtuple() (nchannels, sampwidth, framerate, nframes, comptype, compname), equivalent to output of the get*() methods.
+        print(" ")
+        wave_data = f.readframes(1) ##Reads and returns at most n frames of audio, as a bytes object.
+        print(wave_data)
+        print(struct.unpack("hh", b"\x00\x00\x00\x00"))
+    
+        f.close()
+    else:
+        print('This file does not exist')
     
 #plays audio
 def playAudio(_file):
     #Current working dir
-    cwd = os.getcwd()  
+    cwd = os.getcwd() 
+    existing_files = os.listdir(cwd + '\Recordings')
     file = _file + ".wav"
-  
-    file_path = os.path.join(cwd + '\Recordings', file)
-    
-    #open a wav format music  
-    f = wave.open(file_path,"rb")  
-    
-    #define stream chunk   
-    chunk = 1024 
-    
-    #instantiate PyAudio  
-    p = pyaudio.PyAudio()  
-    #open stream  
-    stream = p.open(format = p.get_format_from_width(f.getsampwidth()),  
-                    channels = f.getnchannels(),  
-                    rate = f.getframerate(),  
-                    output = True)  
-    #read data  
-    data = f.readframes(chunk)  
-    
-    #play stream  
-    while data:  
-        stream.write(data)  
+    if file in existing_files:      
+        file_path = os.path.join(cwd + '\Recordings', file)
+        
+        #open a wav format music  
+        f = wave.open(file_path,"rb")  
+        
+        #define stream chunk   
+        chunk = 1024 
+        
+        #instantiate PyAudio  
+        p = pyaudio.PyAudio()  
+        #open stream  
+        stream = p.open(format = p.get_format_from_width(f.getsampwidth()),  
+                        channels = f.getnchannels(),  
+                        rate = f.getframerate(),  
+                        output = True)  
+        #read data  
         data = f.readframes(chunk)  
-    
-    #stop stream  
-    stream.stop_stream()  
-    stream.close()  
-    
-    #close PyAudio  
-    p.terminate() 
+        
+        #play stream  
+        while data:  
+            stream.write(data)  
+            data = f.readframes(chunk)  
+        
+        #stop stream  
+        stream.stop_stream()  
+        stream.close()  
+        
+        #close PyAudio  
+        p.terminate() 
+    else:
+        print('This file does not exist')
 
 #Displays audio data to graph    
 def display(_file,sec):
     #Current working dir
     cwd = os.getcwd()
+    existing_files = os.listdir(cwd + '\Recordings')
     file = _file + '.wav'
-    rate, data = scipy.io.wavfile.read(os.path.join(cwd + '\Recordings', file))
-    t = np.linspace(0, sec, len(data))   
-    plt.plot(t,data)    
-    plt.show()
-       
+    if file in existing_files:
+        rate, data = scipy.io.wavfile.read(os.path.join(cwd + '\Recordings', file))
+        t = np.linspace(0, sec, len(data))   
+        plt.plot(t,data)    
+        plt.show()
+    else:
+        print('This file does not exist')      
 
 def func(): 
     #Current working dir
