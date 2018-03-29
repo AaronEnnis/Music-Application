@@ -65,7 +65,7 @@ def info(_file):
         print('This file does not exist')
     
 #plays audio
-def playAudio(_file):
+def play(_file):
     #Current working dir
     cwd = os.getcwd() 
     existing_files = os.listdir(cwd + '\Recordings')
@@ -123,7 +123,7 @@ def delete(_file):
     existing_files = os.listdir(cwd + '\Recordings')
     file = _file + '.wav'
 
-    def removekey(d, key):
+    def remove_key(d, key):
         r = dict(d)
         del r[key]
         return r
@@ -136,7 +136,7 @@ def delete(_file):
             with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'r') as f:
                 data = json.load(f) 
             
-            data = removekey(data, file)
+            data = remove_key(data, file)
             
             with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'w') as f:
                 json.dump(data, f)
@@ -144,7 +144,7 @@ def delete(_file):
             print('This file does not exist')
 
 
-def func(): 
+def record(): 
     #Current working dir
     cwd = os.getcwd()  
        
