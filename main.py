@@ -115,7 +115,34 @@ def display(_file,sec):
         plt.plot(t,data)    
         plt.show()
     else:
-        print('This file does not exist')      
+        print('This file does not exist')  
+        
+def delete(_file):
+    #Current working dir
+    cwd = os.getcwd()
+    existing_files = os.listdir(cwd + '\Recordings')
+    file = _file + '.wav'
+    
+    for i in existing_files:
+        file_path = os.path.join(cwd + '\Recordings', file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(e)
+            
+    def removekey(d, key):
+        r = dict(d)
+        del r[key]
+        return r
+    
+    with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'r') as f:
+        data = json.load(f) 
+        
+    data = removekey(data, file)
+    
+    with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'w') as f:
+        json.dump(data, f)
 
 def func(): 
     #Current working dir
