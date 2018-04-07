@@ -13,20 +13,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
+#Thread class
 class Worker(QRunnable):
-    '''
-    Worker thread
-
-    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
-
-    :param callback: The function callback to run on this worker thread. Supplied args and 
-                     kwargs will be passed through to the runner.
-    :type callback: function
-    :param args: Arguments to pass to the callback function
-    :param kwargs: Keywords to pass to the callback function
-
-    '''
-
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
@@ -44,28 +32,38 @@ class Worker(QRunnable):
 class UIPlay(QWidget):
     def __init__(self, parent=None):
         super(UIPlay, self).__init__(parent)
-        self.PlayBTN = QPushButton('go to home', self)
-        self.PlayBTN.move(50, 350)
+        self.HOMESCREEN = QPushButton('go to home', self)
+        self.HOMESCREEN.move(100, 350)
         
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
         self.RECORDINGS = QComboBox(self)        
+        self.DELETE = QComboBox(self) 
         
         for i in existing_files:
             self.RECORDINGS.addItem(str(i))
         self.RECORDINGS.move(200, 350)
         
+        for i in existing_files:
+            self.DELETE.addItem(str(i))
+        self.DELETE.move(300, 350)
+        
+        
 class UIHome(QWidget):
     def __init__(self, parent=None):
         super(UIHome, self).__init__(parent)
-        self.CPSBTN = QPushButton("go to play", self)
-        self.CPSBTN.move(100, 350)
+        self.PLAYSCREEN = QPushButton("go to play", self)
+        self.PLAYSCREEN.move(100, 350)
+        self.RECORD = QPushButton("Record!", self)
+        self.RECORD.move(200, 350)
         
 class UIEmptyHome(QWidget):
     def __init__(self, parent=None):
         super(UIEmptyHome, self).__init__(parent)
-        self.CPSBTN1 = QPushButton("empty go to play", self)
-        self.CPSBTN1.move(150, 350)
+        self.PLAYSCREEN = QPushButton("empty go to play", self)
+        self.PLAYSCREEN.move(100, 350)
+        self.RECORD = QPushButton("Record!", self)
+        self.RECORD.move(200, 350)
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -78,21 +76,24 @@ class MainWindow(QMainWindow):
         self.threadpool.maxThreadCount()
 
 
-        Home = UIHome( self )
-        Home.CPSBTN.clicked.connect( self.play_screen )
+        self.Home_Screen = UIHome( self )
+        self.Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
+        self.Home_Screen.RECORD.clicked.connect( self.record )
         
-        EmptyHome = UIEmptyHome( self )
-        EmptyHome.CPSBTN1.clicked.connect( self.play_screen )
+        self.Empty_Home_Screen = UIEmptyHome( self )
+        self.Empty_Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
+        self.Empty_Home_Screen.RECORD.clicked.connect( self.record )
         
-        Play = UIPlay( self )
-        Play.PlayBTN.clicked.connect( self.home_screen )
-        Play.RECORDINGS.activated[str].connect(self.play_audio)
+        self.Play_Screen = UIPlay( self )
+        self.Play_Screen.HOMESCREEN.clicked.connect( self.home_screen )
+        self.Play_Screen.RECORDINGS.activated[str].connect(self.play_audio)
+        self.Play_Screen.DELETE.activated[str].connect(self.delete_recording)
         self.stack = QStackedWidget(self)
-        self.stack.addWidget(Home)
+        self.stack.addWidget(self.Home_Screen)
         
-        self.stack.addWidget(EmptyHome)
+        self.stack.addWidget(self.Empty_Home_Screen)
         
-        self.stack.addWidget( Play )
+        self.stack.addWidget( self.Play_Screen )
         self.setCentralWidget( self.stack )
         #checks if there are existing recordings
         cwd = music_utils.os.getcwd() 
@@ -122,16 +123,46 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentIndex( 2 )
     
     def _play(self, file):
-        music_utils.play(file)  
+        self.Play_Screen.RECORDINGS.setEnabled(False)
+        self.Play_Screen.DELETE.setEnabled(False)
+        self.Home_Screen.RECORD.setEnabled(False)
+        self.Empty_Home_Screen.RECORD.setEnabled(False)
+        music_utils.play(file) 
+        self.Play_Screen.RECORDINGS.setEnabled(True)
+        self.Play_Screen.DELETE.setEnabled(True)
+        self.Home_Screen.RECORD.setEnabled(True)
+        self.Empty_Home_Screen.RECORD.setEnabled(True)
+        
+    def _record(self):
+        print("RECORDING")       
+        self.Play_Screen.RECORDINGS.setEnabled(False)
+        self.Play_Screen.DELETE.setEnabled(False)
+        self.Home_Screen.RECORD.setEnabled(False)
+        self.Empty_Home_Screen.RECORD.setEnabled(False)
+        music_utils.record() 
+        self.Play_Screen.RECORDINGS.setEnabled(True)
+        self.Play_Screen.DELETE.setEnabled(True)   
+        self.Home_Screen.RECORD.setEnabled(True)
+        self.Empty_Home_Screen.RECORD.setEnabled(True)
+        
+    def _delete(self, file):
+        music_utils.delete(file)
         
     def play_audio(self, file):
-        worker = Worker(self._play,file) 
+        worker = Worker(self._play,file)     
+        self.threadpool.start(worker)
+    
+    def record(self):
+        worker = Worker(self._record) 
+        self.threadpool.start(worker)
+        
+    def delete_recording(self,file):
+        worker = Worker(self._delete,file) 
         self.threadpool.start(worker)
                 
 
-
-
 if __name__ == '__main__':
+    music_utils.check_tab()
     if not QApplication.instance():
         app = QApplication(sys.argv)
     else:
