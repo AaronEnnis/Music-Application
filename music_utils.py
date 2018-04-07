@@ -156,6 +156,24 @@ def check_tab():
                 pass
     else:
         pass
+    
+def get_tab(_file):
+        #Current working dir
+    cwd = os.getcwd()
+
+    if len(os.listdir(cwd + '\Tabs')) > 0:
+        with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'r') as f:
+            data = json.load(f)
+    
+        if _file in data.keys():
+            tab = data[_file]
+            
+            return tab
+        else:
+            print("Tab does not exist")
+    else:
+        pass
+    
 
 def record(): 
     #Current working dir
