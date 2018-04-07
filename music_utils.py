@@ -113,15 +113,15 @@ def display(_file,sec):
     else:
         print('This file does not exist')  
         
+def remove_key(d, key):
+    r = dict(d)
+    del r[key]
+    return r
+        
 def delete(_file):
     #Current working dir
     cwd = os.getcwd()
     existing_files = os.listdir(cwd + '\Recordings')
-
-    def remove_key(d, key):
-        r = dict(d)
-        del r[key]
-        return r
     
     for i in existing_files:
         file_path = os.path.join(cwd + '\Recordings', _file)
@@ -138,6 +138,22 @@ def delete(_file):
         else:
             print('This file does not exist')
 
+def check_tab():
+    #Current working dir
+    cwd = os.getcwd()
+    existing_files = os.listdir(cwd + '\Recordings')
+    
+    with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'r') as f:
+        data = json.load(f) 
+
+    for tab in data.keys(): 
+        if tab not in existing_files:
+            data = remove_key(data, tab)
+            
+            with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'w') as f:
+                json.dump(data, f)
+        else:
+            pass
 
 def record(): 
     #Current working dir
