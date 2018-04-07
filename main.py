@@ -18,6 +18,7 @@ class Worker(QRunnable):
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
+        #fn = function for threads, arg/kwargs = function parameters
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
@@ -56,13 +57,18 @@ class UIHome(QWidget):
         self.PLAYSCREEN.move(100, 350)
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
+        self.QUIT = QPushButton("Quit!", self)
+        self.QUIT.move(300, 350)
         
 class UIEmptyHome(QWidget):
     def __init__(self, parent=None):
         super(UIEmptyHome, self).__init__(parent)
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
+        self.QUIT = QPushButton("Quit!", self)
+        self.QUIT.move(300, 350)
 
+#Main window of application
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -77,9 +83,11 @@ class MainWindow(QMainWindow):
         self.Home_Screen = UIHome( self )
         self.Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
         self.Home_Screen.RECORD.clicked.connect( self.record )
+        self.Home_Screen.QUIT.clicked.connect( self.quit_app )
         
         self.Empty_Home_Screen = UIEmptyHome( self )
         self.Empty_Home_Screen.RECORD.clicked.connect( self.record )
+        self.Empty_Home_Screen.QUIT.clicked.connect( self.quit_app )
         
         self.Play_Screen = UIPlay( self )
         self.Play_Screen.HOMESCREEN.clicked.connect( self.home_screen )
@@ -119,8 +127,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Page2")
         self.stack.setCurrentIndex( 2 )
     
-    def _play(self, file):
-        self.Play_Screen.RECORDINGS.setEnabled(False)
+    def _play(self, file):  #play audio
+        self.Play_Screen.RECORDINGS.setEnabled(False)   
         self.Play_Screen.DELETE.setEnabled(False)
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
@@ -130,7 +138,7 @@ class MainWindow(QMainWindow):
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
         
-    def _record(self):
+    def _record(self): #records audio file
         print("RECORDING")       
         self.Play_Screen.RECORDINGS.setEnabled(False)
         self.Play_Screen.DELETE.setEnabled(False)
@@ -142,20 +150,24 @@ class MainWindow(QMainWindow):
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
         
-    def _delete(self, file):
+    def _delete(self, file):    #deletes audio files
         music_utils.delete(file)
         
-    def play_audio(self, file):
+    def play_audio(self, file):  #creates thread for playing audio files  
         worker = Worker(self._play,file)     
         self.threadpool.start(worker)
     
-    def record(self):
+    def record(self): #creates thread for recording
         worker = Worker(self._record) 
         self.threadpool.start(worker)
         
-    def delete_recording(self,file):
+    def delete_recording(self,file): #creates thread for deleting files
         worker = Worker(self._delete,file) 
         self.threadpool.start(worker)
+        
+    def quit_app(self): #exits out of the app
+        print("Closing App!")
+        sys.exit()
                 
 
 if __name__ == '__main__':
