@@ -9,131 +9,132 @@
 
 import sys
 import music_utils
-from PyQt5.QtCore import QCoreApplication, Qt
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QAction, QMessageBox
-from PyQt5.QtWidgets import QCalendarWidget, QFontDialog, QColorDialog, QTextEdit, QFileDialog
-from PyQt5.QtWidgets import QCheckBox, QProgressBar, QComboBox, QLabel, QStyleFactory, QLineEdit, QInputDialog
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
+class Worker(QRunnable):
+    '''
+    Worker thread
 
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
 
-class window(QMainWindow):
+    :param callback: The function callback to run on this worker thread. Supplied args and 
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
 
-    def __init__(self):
-        super(window, self).__init__()
-        self.setGeometry(50, 50, 800, 500)
-        self.setWindowTitle('Music Application')
-        #self.setWindowIcon(QIcon('pic.png'))
+    '''
 
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
 
-        openEditor = QAction('&Editor', self)
-        openEditor.setShortcut('Ctrl+E')
-        openEditor.setStatusTip('Open Editor')
-        openEditor.triggered.connect(self.editor)
+    @pyqtSlot()
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+        self.fn(*self.args, **self.kwargs)
 
-        openFile = QAction('&Open File', self)
-        openFile.setShortcut('Ctrl+O')
-        openFile.setStatusTip('Open File')
-        openFile.triggered.connect(self.file_open)
-
-        saveFile = QAction('&Save File', self)
-        saveFile.setShortcut('Ctrl+S')
-        saveFile.setStatusTip('Save File')
-        saveFile.triggered.connect(self.file_save)
+class UIPlay(QWidget):
+    def __init__(self, parent=None):
+        super(UIPlay, self).__init__(parent)
+        self.PlayBTN = QPushButton('go to home', self)
+        self.PlayBTN.move(50, 350)
         
-        extractAction = QAction('Quit', self)
-        extractAction.setShortcut('Ctrl+Q')
-        extractAction.setStatusTip('leave the app')
-        extractAction.triggered.connect(self.close_application)
-
-
-        self.statusBar()
-
-        mainMenu = self.menuBar()
-        fileMenu = mainMenu.addMenu('&File')
-        fileMenu.addAction(extractAction)
-
-        fileMenu.addAction(openFile)
-        fileMenu.addAction(saveFile)
-
-
-        editorMenu = mainMenu.addMenu('&Editor')
-        editorMenu.addAction(openEditor)
-
-
-        self.home()
-
-    def editor(self):
-        self.textEdit = QTextEdit()
-        self.setCentralWidget(self.textEdit)
-
-    def file_open(self):
-        # need to make name an tupple otherwise i had an error and app crashed
-        name, _ = QFileDialog.getOpenFileName(self, 'Open File', options=QFileDialog.DontUseNativeDialog)
-        print('tot na dialog gelukt')  # for debugging
-        file = open(name, 'r')
-        print('na het inlezen gelukt') # for debugging
-        self.editor()
-
-        with file:
-            text = file.read()
-            self.textEdit.setText(text)
-
-    def file_save(self):
-        name, _ = QFileDialog.getSaveFileName(self,'Save File', options=QFileDialog.DontUseNativeDialog)
-        file = open(name, 'w')
-        text = self.textEdit.toPlainText()
-        file.write(text)
-        file.close()
-        
-    def close_application(self):
-        choice = QMessageBox.question(self, 'Message',
-                                     "Are you sure to quit?", QMessageBox.Yes |
-                                     QMessageBox.No, QMessageBox.No)
-
-        if choice == QMessageBox.Yes:
-            print('quit application')
-            sys.exit()
-        else:
-            pass
-    
-    def play(self, file):
-        music_utils.play(file)
-        
-
-    def home(self):
-        btn = QPushButton('play', self)
-        btn.clicked.connect(lambda: music_utils.play('test2'))
-        btn.resize(btn.sizeHint())
-        btn.move(0, 50)
-        
-        btn = QPushButton('display', self)
-        btn.clicked.connect(lambda: music_utils.display('test2',5))
-        btn.resize(btn.sizeHint())
-        btn.move(0, 100)
-        
-        btn = QPushButton('quit', self)
-        btn.clicked.connect(self.close_application)
-        btn.resize(btn.sizeHint())
-        btn.move(0, 150)
-        
-        #Current working dir
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
-        comboBox = QComboBox(self)
+        self.RECORDINGS = QComboBox(self)        
+        
         for i in existing_files:
-            comboBox.addItem(str(i))
+            self.RECORDINGS.addItem(str(i))
+        self.RECORDINGS.move(200, 350)
+        
+class UIHome(QWidget):
+    def __init__(self, parent=None):
+        super(UIHome, self).__init__(parent)
+        self.CPSBTN = QPushButton("go to play", self)
+        self.CPSBTN.move(100, 350)
+        
+class UIEmptyHome(QWidget):
+    def __init__(self, parent=None):
+        super(UIEmptyHome, self).__init__(parent)
+        self.CPSBTN1 = QPushButton("empty go to play", self)
+        self.CPSBTN1.move(150, 350)
 
-        comboBox.move(25, 250)
-        comboBox.activated[str].connect(self.play)
+class MainWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super(MainWindow, self).__init__(parent)
+        self.setGeometry(50, 50, 800, 500)
+        self.setWindowTitle('Music Application')
+        
+        #setting threads
+        self.threadpool = QThreadPool()
+        self.threadpool.maxThreadCount()
 
+
+        Home = UIHome( self )
+        Home.CPSBTN.clicked.connect( self.play_screen )
+        
+        EmptyHome = UIEmptyHome( self )
+        EmptyHome.CPSBTN1.clicked.connect( self.play_screen )
+        
+        Play = UIPlay( self )
+        Play.PlayBTN.clicked.connect( self.home_screen )
+        Play.RECORDINGS.activated[str].connect(self.play_audio)
+        self.stack = QStackedWidget(self)
+        self.stack.addWidget(Home)
+        
+        self.stack.addWidget(EmptyHome)
+        
+        self.stack.addWidget( Play )
+        self.setCentralWidget( self.stack )
+        #checks if there are existing recordings
+        cwd = music_utils.os.getcwd() 
+        existing_files = music_utils.os.listdir(cwd + '\Recordings')
+        if len(existing_files) == 0:
+            self.setWindowTitle("Home")
+            self.stack.setCurrentIndex( 1 )
+        else:
+            self.setWindowTitle("Home")
+            self.stack.setCurrentIndex(0)
+            
         self.show()
 
-if __name__ == "__main__":  # had to add this otherwise app crashed
+    def home_screen(self):
+        #checks if there are existing recordings
+        cwd = music_utils.os.getcwd() 
+        existing_files = music_utils.os.listdir(cwd + '\Recordings')
+        if len(existing_files) == 0:
+            self.setWindowTitle("Page2")
+            self.stack.setCurrentIndex( 1 )
+        else:
+            self.setWindowTitle("Page1")
+            self.stack.setCurrentIndex(0)
+        
+    def play_screen(self):
+        self.setWindowTitle("Page2")
+        self.stack.setCurrentIndex( 2 )
+    
+    def _play(self, file):
+        music_utils.play(file)  
+        
+    def play_audio(self, file):
+        worker = Worker(self._play,file) 
+        self.threadpool.start(worker)
+                
 
-    def run():
+
+
+if __name__ == '__main__':
+    if not QApplication.instance():
         app = QApplication(sys.argv)
-        Gui = window()
-        sys.exit(app.exec_())
-
-    run()
+    else:
+        app = QApplication.instance() 
+    w = MainWindow()
+    sys.exit(app.exec_())
