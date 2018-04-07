@@ -142,18 +142,20 @@ def check_tab():
     #Current working dir
     cwd = os.getcwd()
     existing_files = os.listdir(cwd + '\Recordings')
+    if len(os.listdir(cwd + '\Tabs')) > 0:
+        with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'r') as f:
+            data = json.load(f)
     
-    with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'r') as f:
-        data = json.load(f) 
-
-    for tab in data.keys(): 
-        if tab not in existing_files:
-            data = remove_key(data, tab)
-            
-            with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'w') as f:
-                json.dump(data, f)
-        else:
-            pass
+        for tab in data.keys(): 
+            if tab not in existing_files:
+                data = remove_key(data, tab)
+                
+                with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'w') as f:
+                    json.dump(data, f)
+            else:
+                pass
+    else:
+        pass
 
 def record(): 
     #Current working dir

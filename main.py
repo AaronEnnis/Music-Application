@@ -60,8 +60,6 @@ class UIHome(QWidget):
 class UIEmptyHome(QWidget):
     def __init__(self, parent=None):
         super(UIEmptyHome, self).__init__(parent)
-        self.PLAYSCREEN = QPushButton("empty go to play", self)
-        self.PLAYSCREEN.move(100, 350)
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
 
@@ -81,7 +79,6 @@ class MainWindow(QMainWindow):
         self.Home_Screen.RECORD.clicked.connect( self.record )
         
         self.Empty_Home_Screen = UIEmptyHome( self )
-        self.Empty_Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
         self.Empty_Home_Screen.RECORD.clicked.connect( self.record )
         
         self.Play_Screen = UIPlay( self )
