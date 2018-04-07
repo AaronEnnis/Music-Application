@@ -123,7 +123,7 @@ def delete(_file):
     cwd = os.getcwd()
     existing_files = os.listdir(cwd + '\Recordings')
     
-    for i in existing_files:
+    if _file in existing_files:
         file_path = os.path.join(cwd + '\Recordings', _file)
         if os.path.isfile(file_path):
             os.unlink(file_path)
@@ -136,7 +136,9 @@ def delete(_file):
             with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'w') as f:
                 json.dump(data, f)
         else:
-            print('This file does not exist')
+            pass
+    else:
+        print('This file does not exist')
 
 def check_tab():
     #Current working dir
@@ -167,8 +169,7 @@ def get_tab(_file):
     
         if _file in data.keys():
             tab = data[_file]
-            
-            
+                       
         else:
             tab = 'Tab does not exist'
             return tab
@@ -346,6 +347,6 @@ def record():
         
         with open(os.path.join(cwd, 'tabs.json'), 'w') as f:
             json.dump(data, f)
-        
-        print(data)
+
+        return file
      

@@ -110,7 +110,6 @@ class MainWindow(QMainWindow):
             self.setWindowTitle("Home")
             self.stack.setCurrentIndex(0)
             
-        self.show()
 
     def home_screen(self):
         #checks if there are existing recordings
@@ -126,6 +125,7 @@ class MainWindow(QMainWindow):
     def play_screen(self):
         self.setWindowTitle("Page2")
         self.stack.setCurrentIndex( 2 )
+        
     
     def _play(self, file):  #play audio
         self.Play_Screen.RECORDINGS.setEnabled(False)   
@@ -144,14 +144,21 @@ class MainWindow(QMainWindow):
         self.Play_Screen.DELETE.setEnabled(False)
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
-        music_utils.record() 
+        file = music_utils.record() 
         self.Play_Screen.RECORDINGS.setEnabled(True)
         self.Play_Screen.DELETE.setEnabled(True)   
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
         
-    def _delete(self, file):    #deletes audio files
-        music_utils.delete(file)
+        self.Play_Screen.RECORDINGS.addItem(file)
+        self.Play_Screen.DELETE.addItem(file)
+        
+        
+    def _delete(self, _file):    #deletes audio files
+        music_utils.delete(_file)
+        idx = self.Play_Screen.DELETE.currentIndex()
+        self.Play_Screen.RECORDINGS.removeItem(idx)
+        self.Play_Screen.DELETE.removeItem(idx)
         
     def play_audio(self, file):  #creates thread for playing audio files  
         worker = Worker(self._play,file)     
@@ -165,6 +172,7 @@ class MainWindow(QMainWindow):
         worker = Worker(self._delete,file) 
         self.threadpool.start(worker)
         
+        
     def quit_app(self): #exits out of the app
         print("Closing App!")
         sys.exit()
@@ -177,4 +185,5 @@ if __name__ == '__main__':
     else:
         app = QApplication.instance() 
     w = MainWindow()
+    w.show()
     sys.exit(app.exec_())
