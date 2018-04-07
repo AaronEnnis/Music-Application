@@ -168,9 +168,10 @@ def get_tab(_file):
         if _file in data.keys():
             tab = data[_file]
             
-            return tab
+            
         else:
-            print("Tab does not exist")
+            tab = 'Tab does not exist'
+            return tab
     else:
         pass
     
