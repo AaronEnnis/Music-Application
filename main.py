@@ -33,12 +33,14 @@ class Worker(QRunnable):
 class UIPlay(QWidget):
     def __init__(self, parent=None):
         super(UIPlay, self).__init__(parent)
-        self.HOMESCREEN = QPushButton('go to home', self)
+        self.HOMESCREEN = QPushButton('Go to home', self)
         self.HOMESCREEN.move(100, 350)
         
         self.TAB = QLabel('Tab', self)         
         self.TAB.move(50, 50)
         
+        self.PLAY_LBL = QLabel('Play', self)
+        self.DELETE_LBL = QLabel('Delete', self)
         
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
@@ -48,14 +50,16 @@ class UIPlay(QWidget):
         for i in existing_files:
             self.RECORDINGS.addItem(str(i))
             self.DELETE.addItem(str(i))
+            
+        self.PLAY_LBL.move(200,325)
         self.RECORDINGS.move(200, 350)  
+        self.DELETE_LBL.move(300,325)
         self.DELETE.move(300, 350)
-        
         
 class UIHome(QWidget):
     def __init__(self, parent=None):
         super(UIHome, self).__init__(parent)
-        self.PLAYSCREEN = QPushButton("go to play", self)
+        self.PLAYSCREEN = QPushButton("Go to play", self)
         self.PLAYSCREEN.move(100, 350)
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
@@ -65,6 +69,11 @@ class UIHome(QWidget):
 class UIEmptyHome(QWidget):
     def __init__(self, parent=None):
         super(UIEmptyHome, self).__init__(parent)
+        self.PLAYSCREEN = QPushButton("Go to play", self)
+        self.PLAYSCREEN.move(100, 350)
+        self.PLAYSCREEN.setEnabled(False)
+        self.PLAYSCREEN.setVisible(False)
+        
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
         self.QUIT = QPushButton("Quit!", self)
@@ -80,8 +89,9 @@ class MainWindow(QMainWindow):
         #setting threads
         self.threadpool = QThreadPool()
         self.threadpool.maxThreadCount()
-
-
+        
+        self.recording_lbl = QLabel('', self)         
+        self.recording_lbl.move(200, 325)
 
         self.Home_Screen = UIHome( self )
         self.Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
@@ -89,6 +99,7 @@ class MainWindow(QMainWindow):
         self.Home_Screen.QUIT.clicked.connect( self.quit_app )
         
         self.Empty_Home_Screen = UIEmptyHome( self )
+        self.Empty_Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
         self.Empty_Home_Screen.RECORD.clicked.connect( self.record )
         self.Empty_Home_Screen.QUIT.clicked.connect( self.quit_app )
         
@@ -125,6 +136,8 @@ class MainWindow(QMainWindow):
         else:
             self.setWindowTitle("Page1")
             self.stack.setCurrentIndex(0)
+            self.Empty_Home_Screen.PLAYSCREEN.setEnabled(False)
+            self.Empty_Home_Screen.PLAYSCREEN.setVisible(False) 
         
     def play_screen(self):
         self.setWindowTitle("Page2")
@@ -147,23 +160,27 @@ class MainWindow(QMainWindow):
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
         
-    def _record(self): #records audio file
-        print("RECORDING")       
+    def _record(self): #records audio file 
+        self.recording_lbl.setText("RECORDING")
         self.Play_Screen.RECORDINGS.setEnabled(False)
         self.Play_Screen.DELETE.setEnabled(False)
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
         file = music_utils.record() 
+        self.recording_lbl.setText("")
         self.Play_Screen.RECORDINGS.setEnabled(True)
         self.Play_Screen.DELETE.setEnabled(True)   
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
+        self.Empty_Home_Screen.PLAYSCREEN.setEnabled(True)
+        self.Empty_Home_Screen.PLAYSCREEN.setVisible(True)        
         
         self.Play_Screen.RECORDINGS.addItem(file)
         self.Play_Screen.DELETE.addItem(file)
         
         
-    def _delete(self, _file):    #deletes audio files
+    def _delete(self, _file):    #deletes audio files        
+
         music_utils.delete(_file)
         idx = self.Play_Screen.DELETE.currentIndex()
         self.Play_Screen.RECORDINGS.removeItem(idx)
@@ -178,8 +195,17 @@ class MainWindow(QMainWindow):
         self.threadpool.start(worker)
         
     def delete_recording(self,file): #creates thread for deleting files
-        worker = Worker(self._delete,file) 
-        self.threadpool.start(worker)
+        
+        choice = QMessageBox.question(self, 'Message',
+                                      "Are you sure to delete?", 
+                                      QMessageBox.Yes | QMessageBox.No)
+
+        if choice == QMessageBox.Yes:
+            worker = Worker(self._delete,file) 
+            self.threadpool.start(worker)
+        elif choice == QMessageBox.No:
+            pass
+
         
         
     def quit_app(self): #exits out of the app
