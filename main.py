@@ -196,7 +196,7 @@ class MainWindow(QMainWindow):
         
     def delete_recording(self,file): #creates thread for deleting files
         
-        choice = QMessageBox.question(self, 'Message',
+        choice = QMessageBox.question(self, 'Delete?',
                                       "Are you sure to delete?", 
                                       QMessageBox.Yes | QMessageBox.No)
 
@@ -209,8 +209,16 @@ class MainWindow(QMainWindow):
         
         
     def quit_app(self): #exits out of the app
-        print("Closing App!")
-        sys.exit()
+        
+        choice = QMessageBox.question(self, 'Quit?',
+                              "Are you sure to quit?", 
+                              QMessageBox.Yes | QMessageBox.No)
+
+        if choice == QMessageBox.Yes:
+            print("Closing App!")
+            sys.exit()
+        elif choice == QMessageBox.No:
+            pass
                 
 
 if __name__ == '__main__':
