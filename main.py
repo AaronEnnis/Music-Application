@@ -25,9 +25,6 @@ class Worker(QRunnable):
 
     @pyqtSlot()
     def run(self):
-        '''
-        Initialise the runner function with passed args, kwargs.
-        '''
         self.fn(*self.args, **self.kwargs)
 
 class UIPlay(QWidget):
@@ -108,7 +105,7 @@ class MainWindow(QMainWindow):
         
         self.Play_Screen = UIPlay( self )
         self.Play_Screen.HOMESCREEN.clicked.connect( self.home_screen )
-        self.Play_Screen.STOP.clicked.connect( self.home_screen )
+        self.Play_Screen.STOP.clicked.connect( self.stop )
         self.Play_Screen.RECORDINGS.activated[str].connect(self.play_audio)
         self.Play_Screen.DELETE.activated[str].connect(self.delete_recording)
         
@@ -193,7 +190,7 @@ class MainWindow(QMainWindow):
         idx = self.Play_Screen.DELETE.currentIndex()
         self.Play_Screen.RECORDINGS.removeItem(idx)
         self.Play_Screen.DELETE.removeItem(idx)
-        
+               
     def play_audio(self, file):  #creates thread for playing audio files  
         worker = Worker(self._play,file)     
         self.threadpool.start(worker)
@@ -201,6 +198,9 @@ class MainWindow(QMainWindow):
     def record(self): #creates thread for recording
         worker = Worker(self._record) 
         self.threadpool.start(worker)
+        
+    def stop(self): #creates thread for stopping recording
+        print("stop")
         
     def delete_recording(self,file): #creates thread for deleting files
         
@@ -235,6 +235,7 @@ if __name__ == '__main__':
         app = QApplication(sys.argv)
     else:
         app = QApplication.instance() 
+    
     w = MainWindow()
     w.show()
     sys.exit(app.exec_())
