@@ -47,6 +47,10 @@ class UIPlay(QWidget):
         self.RECORDINGS = QComboBox(self)        
         self.DELETE = QComboBox(self) 
         
+        self.STOP = QPushButton('Stop', self)
+        self.STOP.move(200, 375)
+        self.STOP.setEnabled(False)
+        
         for i in existing_files:
             self.RECORDINGS.addItem(str(i))
             self.DELETE.addItem(str(i))
@@ -88,7 +92,6 @@ class MainWindow(QMainWindow):
         
         #setting threads
         self.threadpool = QThreadPool()
-        self.threadpool.maxThreadCount()
         
         self.recording_lbl = QLabel('', self)         
         self.recording_lbl.move(200, 325)
@@ -105,6 +108,7 @@ class MainWindow(QMainWindow):
         
         self.Play_Screen = UIPlay( self )
         self.Play_Screen.HOMESCREEN.clicked.connect( self.home_screen )
+        self.Play_Screen.STOP.clicked.connect( self.home_screen )
         self.Play_Screen.RECORDINGS.activated[str].connect(self.play_audio)
         self.Play_Screen.DELETE.activated[str].connect(self.delete_recording)
         
@@ -149,27 +153,31 @@ class MainWindow(QMainWindow):
         self.Play_Screen.DELETE.setEnabled(False)
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
+        self.Play_Screen.STOP.setEnabled(True)
         
         tab = music_utils.get_tab(file)
         self.Play_Screen.TAB.setGeometry(50,50,700,50)
         self.Play_Screen.TAB.setText(tab)
         music_utils.play(file) 
         
+        self.Play_Screen.STOP.setEnabled(False)
         self.Play_Screen.RECORDINGS.setEnabled(True)
         self.Play_Screen.DELETE.setEnabled(True)
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
         
     def _record(self): #records audio file 
-        self.recording_lbl.setText("RECORDING")
+        self.recording_lbl.setText("RECORDING")        
         self.Play_Screen.RECORDINGS.setEnabled(False)
-        self.Play_Screen.DELETE.setEnabled(False)
+        self.Play_Screen.DELETE.setEnabled(False)       
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
+        
         file = music_utils.record() 
-        self.recording_lbl.setText("")
+        
+        self.recording_lbl.setText("")        
         self.Play_Screen.RECORDINGS.setEnabled(True)
-        self.Play_Screen.DELETE.setEnabled(True)   
+        self.Play_Screen.DELETE.setEnabled(True) 
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.PLAYSCREEN.setEnabled(True)
