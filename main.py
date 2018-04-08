@@ -36,6 +36,10 @@ class UIPlay(QWidget):
         self.HOMESCREEN = QPushButton('go to home', self)
         self.HOMESCREEN.move(100, 350)
         
+        self.TAB = QLabel('Tab', self)         
+        self.TAB.move(50, 50)
+        
+        
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
         self.RECORDINGS = QComboBox(self)        
@@ -43,10 +47,8 @@ class UIPlay(QWidget):
         
         for i in existing_files:
             self.RECORDINGS.addItem(str(i))
-        self.RECORDINGS.move(200, 350)
-        
-        for i in existing_files:
             self.DELETE.addItem(str(i))
+        self.RECORDINGS.move(200, 350)  
         self.DELETE.move(300, 350)
         
         
@@ -80,6 +82,7 @@ class MainWindow(QMainWindow):
         self.threadpool.maxThreadCount()
 
 
+
         self.Home_Screen = UIHome( self )
         self.Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
         self.Home_Screen.RECORD.clicked.connect( self.record )
@@ -93,6 +96,7 @@ class MainWindow(QMainWindow):
         self.Play_Screen.HOMESCREEN.clicked.connect( self.home_screen )
         self.Play_Screen.RECORDINGS.activated[str].connect(self.play_audio)
         self.Play_Screen.DELETE.activated[str].connect(self.delete_recording)
+        
         self.stack = QStackedWidget(self)
         self.stack.addWidget(self.Home_Screen)
         
@@ -132,7 +136,12 @@ class MainWindow(QMainWindow):
         self.Play_Screen.DELETE.setEnabled(False)
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
+        
+        tab = music_utils.get_tab(file)
+        self.Play_Screen.TAB.setGeometry(50,50,700,50)
+        self.Play_Screen.TAB.setText(tab)
         music_utils.play(file) 
+        
         self.Play_Screen.RECORDINGS.setEnabled(True)
         self.Play_Screen.DELETE.setEnabled(True)
         self.Home_Screen.RECORD.setEnabled(True)

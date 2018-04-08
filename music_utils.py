@@ -168,7 +168,22 @@ def get_tab(_file):
             data = json.load(f)
     
         if _file in data.keys():
-            tab = data[_file]
+            notes = []
+            count = 0
+            tab = ''
+            tab_dict = data[_file]
+            
+            #gets every fourth note
+            for v in tab_dict.values():
+                notes.append(v)
+            for i in notes:
+                if count == 3:
+                    tab = tab + i + ', '
+                    count = 0
+                else:
+                    count += 1
+               
+            return tab
                        
         else:
             tab = 'Tab does not exist'
