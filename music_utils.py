@@ -118,23 +118,17 @@ def remove_key(d, key):
     del r[key]
     return r
         
-def delete(_file):
+def delete(_file,_tab):
     #Current working dir
     cwd = os.getcwd()
     existing_files = os.listdir(cwd + '\Recordings')
     
     if _file in existing_files:
         file_path = os.path.join(cwd + '\Recordings', _file)
-        if os.path.isfile(file_path):
+        tab_file_path = os.path.join(cwd + '\Tabs', _tab)
+        if os.path.isfile(file_path) and os.path.isfile(tab_file_path):
             os.unlink(file_path)
-            
-            with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'r') as f:
-                data = json.load(f) 
-            
-            data = remove_key(data, _file)
-            
-            with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'w') as f:
-                json.dump(data, f)
+            os.unlink(tab_file_path)
         else:
             pass
     else:
@@ -192,10 +186,7 @@ def get_tab(_file):
         pass
     
 
-def record(): 
-    #Current working dir
-    cwd = os.getcwd()  
-       
+def record(_recording_lenght):        
     NOTE_MIN = 40       # E2
     NOTE_MAX = 76       # E4
     FSAMP = 22050       # Sampling frequency in Hz
@@ -236,28 +227,7 @@ def record():
     # Allocate space to run an FFT. 
     buf = np.zeros(SAMPLES_PER_FFT, dtype=np.float32)
     num_frames = 0
-    
-    def normalize(snd_data):
-        #Average the volume out"
-        MAXIMUM = 16384
-        times = float(MAXIMUM)/max(abs(i) for i in snd_data)
-
-        r = array('h')
-        for i in snd_data:
-            r.append(int(i*times))
-        return r
-
-    def record_to_file(path,data,sW):
-        #Records from the microphone and outputs the resulting data to 'path'
-        data = pack('<' + ('h'*len(data)), *data)
-
-        wf = wave.open(path, 'wb')
-        wf.setnchannels(1)
-        wf.setsampwidth(sW)
-        wf.setframerate(FSAMP)
-        wf.writeframes(data)
-        wf.close()
-    
+        
     p = pyaudio.PyAudio()    
     # Initialize audio
     stream = p.open(format=pyaudio.paInt16,
@@ -289,7 +259,7 @@ def record():
     snd_data = array('h', normalize_data)
     r.extend(snd_data)
     #records for x amount of seconds
-    while elapsed < 5:
+    while elapsed < _recording_lenght:
         elapsed = time.time() - start 
         read = np.fromstring(stream.read(FRAME_SIZE), np.int16)
         # Shift the buffer down and new data in
@@ -321,47 +291,50 @@ def record():
             print ('---')
             notes[elapsed] = '---'
     
+    return notes, len(normalize_data), r, p, stream
 
+def create_file(_file, _notes, _normalize_data_lenght, r, p, stream):
+    #Current working dir
+    cwd = os.getcwd()
+    FSAMP = 22050       # Sampling frequency in Hz
+    
+    def normalize(snd_data):
+        #Average the volume out"
+        MAXIMUM = 16384
+        times = float(MAXIMUM)/max(abs(i) for i in snd_data)
+
+        r = array('h')
+        for i in snd_data:
+            r.append(int(i*times))
+        return r
+
+    def record_to_file(path,data,sW):
+        #Records from the microphone and outputs the resulting data to 'path'
+        data = pack('<' + ('h'*len(data)), *data)
+
+        wf = wave.open(path, 'wb')
+        wf.setnchannels(1)
+        wf.setsampwidth(sW)
+        wf.setframerate(FSAMP)
+        wf.writeframes(data)
+        wf.close()
+        
     sample_width = p.get_sample_size(pyaudio.paInt16)
     stream.stop_stream()
     stream.close()
     p.terminate() 
     r = normalize(r)
     #removes the normalizing sound
-    r = r[len(normalize_data):] 
-    file = input('File name? ')
-    file = file + '.wav'
-    existing_files = os.listdir(cwd + "\Recordings")
+    r = r[_normalize_data_lenght:] 
     
-    while file in existing_files:
-            print('This file name already in use!')
-            file = input('File name? ')
-            file = file + '.wav'
-            
-
+    file = _file + '.wav'
     path = os.path.join(cwd + '\Recordings', file)
     record_to_file(path,r,sample_width)
     
-    cwd = cwd + '\Tabs'    
-    existing_files = os.listdir(cwd)
-  
     json_data = {}
-    json_data[file] = notes
-    
-    if len(existing_files) == 0:
-        #Write notes to JSON
-        with open(os.path.join(cwd, 'tabs.json'), 'w') as f:
-            json.dump(json_data, f)
-        print(notes)
-    else:
-        #Open JSON file
-        with open(os.path.join(cwd, 'tabs.json'), 'r') as f:
-            data = json.load(f) 
-            
-        data.update(json_data)
-        
-        with open(os.path.join(cwd, 'tabs.json'), 'w') as f:
-            json.dump(data, f)
+    json_data[file] = _notes
+    #create JSON
+    with open(os.path.join(cwd+ '\Tabs', '%s.json' % (_file)), 'w') as f:
+        json.dump(_notes, f)
 
-        return file
      

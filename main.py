@@ -62,6 +62,16 @@ class UIHome(QWidget):
         super(UIHome, self).__init__(parent)
         self.PLAYSCREEN = QPushButton("Go to play", self)
         self.PLAYSCREEN.move(100, 350)
+        self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)         
+        self.RECORDING_LBL.move(250, 325)        
+        self.RECORDING_TIME = QComboBox(self)
+        self.RECORDING_TIME.addItem(str(5))
+        self.RECORDING_TIME.addItem(str(10))
+        self.RECORDING_TIME.addItem(str(15))
+        self.RECORDING_TIME.addItem(str(20))
+        self.RECORDING_TIME.addItem(str(25))
+        self.RECORDING_TIME.addItem(str(30))
+        self.RECORDING_TIME.move(200, 325)
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
         self.QUIT = QPushButton("Quit!", self)
@@ -74,7 +84,16 @@ class UIEmptyHome(QWidget):
         self.PLAYSCREEN.move(100, 350)
         self.PLAYSCREEN.setEnabled(False)
         self.PLAYSCREEN.setVisible(False)
-        
+        self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)         
+        self.RECORDING_LBL.move(250, 325)        
+        self.RECORDING_TIME = QComboBox(self)
+        self.RECORDING_TIME.addItem(str(5))
+        self.RECORDING_TIME.addItem(str(10))
+        self.RECORDING_TIME.addItem(str(15))
+        self.RECORDING_TIME.addItem(str(20))
+        self.RECORDING_TIME.addItem(str(25))
+        self.RECORDING_TIME.addItem(str(30))
+        self.RECORDING_TIME.move(200, 325)        
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
         self.QUIT = QPushButton("Quit!", self)
@@ -91,7 +110,7 @@ class MainWindow(QMainWindow):
         self.threadpool = QThreadPool()
         
         self.recording_lbl = QLabel('', self)         
-        self.recording_lbl.move(200, 325)
+        self.recording_lbl.move(200, 375)
 
         self.Home_Screen = UIHome( self )
         self.Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
@@ -163,14 +182,27 @@ class MainWindow(QMainWindow):
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
         
-    def _record(self): #records audio file 
+    def _record(self, sec): #records audio file 
         self.recording_lbl.setText("RECORDING")        
         self.Play_Screen.RECORDINGS.setEnabled(False)
         self.Play_Screen.DELETE.setEnabled(False)       
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
         
-        file = music_utils.record() 
+        notes, norm_len, r, p, stream = music_utils.record(sec)
+        #Current working dir
+        cwd = music_utils.os.getcwd()
+        existing_files = music_utils.os.listdir(cwd + "\Recordings")
+        
+        file, okPressed = QInputDialog.getText(self, "File Name","Enter name of file:", QLineEdit.Normal, "")
+        file = file + '.wav'
+        if okPressed and file != '':
+            while file in existing_files:
+                print('This file name already in use!')
+                file, okPressed = QInputDialog.getText(self, "File Name","Enter name of file:", QLineEdit.Normal, "")
+                file_name = file + '.wav'
+
+        file = music_utils.create_file(file_name, notes, norm_len, r, p, stream)
         
         self.recording_lbl.setText("")        
         self.Play_Screen.RECORDINGS.setEnabled(True)
@@ -185,7 +217,6 @@ class MainWindow(QMainWindow):
         
         
     def _delete(self, _file):    #deletes audio files        
-
         music_utils.delete(_file)
         idx = self.Play_Screen.DELETE.currentIndex()
         self.Play_Screen.RECORDINGS.removeItem(idx)
@@ -196,7 +227,11 @@ class MainWindow(QMainWindow):
         self.threadpool.start(worker)
     
     def record(self): #creates thread for recording
-        worker = Worker(self._record) 
+        if self.stack.currentIndex() == 0:
+            sec = self.Home_Screen.RECORDING_TIME.currentText()
+        else:
+            sec = self.Empty_Home_Screen.RECORDING_TIME.currentText()
+        worker = Worker(self._record,int(sec)) 
         self.threadpool.start(worker)
         
     def stop(self): #creates thread for stopping recording
