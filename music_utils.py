@@ -333,14 +333,13 @@ def create_file(_file, _notes, _normalize_data_lenght, r, p, stream):
     #removes the normalizing sound
     r = r[_normalize_data_lenght:] 
     
-    file = _file + '.wav'
-    path = os.path.join(cwd + '\Recordings', file)
+    path = os.path.join(cwd + '\Recordings', _file)
     record_to_file(path,r,sample_width)
     
     json_data = {}
-    json_data[file] = _notes
+    json_data[_file] = _notes
     #create JSON
-    with open(os.path.join(cwd+ '\Tabs', '%s.json' % (_file)), 'w') as f:
+    with open(os.path.join(cwd+ '\Tabs', '%s.json' % (_file[:-4])), 'w') as f:
         json.dump(_notes, f)
 
      

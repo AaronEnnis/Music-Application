@@ -44,10 +44,6 @@ class UIPlay(QWidget):
         self.RECORDINGS = QComboBox(self)        
         self.DELETE = QComboBox(self) 
         
-        self.STOP = QPushButton('Stop', self)
-        self.STOP.move(200, 375)
-        self.STOP.setEnabled(False)
-        
         for i in existing_files:
             self.RECORDINGS.addItem(str(i))
             self.DELETE.addItem(str(i))
@@ -56,14 +52,16 @@ class UIPlay(QWidget):
         self.RECORDINGS.move(200, 350)  
         self.DELETE_LBL.move(300,325)
         self.DELETE.move(300, 350)
-        
+
 class UIHome(QWidget):
     def __init__(self, parent=None):
         super(UIHome, self).__init__(parent)
         self.PLAYSCREEN = QPushButton("Go to play", self)
         self.PLAYSCREEN.move(100, 350)
+       
         self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)         
         self.RECORDING_LBL.move(250, 325)        
+       
         self.RECORDING_TIME = QComboBox(self)
         self.RECORDING_TIME.addItem(str(5))
         self.RECORDING_TIME.addItem(str(10))
@@ -71,9 +69,12 @@ class UIHome(QWidget):
         self.RECORDING_TIME.addItem(str(20))
         self.RECORDING_TIME.addItem(str(25))
         self.RECORDING_TIME.addItem(str(30))
+        
         self.RECORDING_TIME.move(200, 325)
+        
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
+        
         self.QUIT = QPushButton("Quit!", self)
         self.QUIT.move(300, 350)
         
@@ -84,8 +85,10 @@ class UIEmptyHome(QWidget):
         self.PLAYSCREEN.move(100, 350)
         self.PLAYSCREEN.setEnabled(False)
         self.PLAYSCREEN.setVisible(False)
-        self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)         
-        self.RECORDING_LBL.move(250, 325)        
+       
+        self.SECONDS_LBL = QLabel('Lenght of recording (seconds)', self)         
+        self.SECONDS_LBL.move(250, 325)        
+       
         self.RECORDING_TIME = QComboBox(self)
         self.RECORDING_TIME.addItem(str(5))
         self.RECORDING_TIME.addItem(str(10))
@@ -94,8 +97,10 @@ class UIEmptyHome(QWidget):
         self.RECORDING_TIME.addItem(str(25))
         self.RECORDING_TIME.addItem(str(30))
         self.RECORDING_TIME.move(200, 325)        
+        
         self.RECORD = QPushButton("Record!", self)
         self.RECORD.move(200, 350)
+        
         self.QUIT = QPushButton("Quit!", self)
         self.QUIT.move(300, 350)
 
@@ -124,7 +129,6 @@ class MainWindow(QMainWindow):
         
         self.Play_Screen = UIPlay( self )
         self.Play_Screen.HOMESCREEN.clicked.connect( self.home_screen )
-        self.Play_Screen.STOP.clicked.connect( self.stop )
         self.Play_Screen.RECORDINGS.activated[str].connect(self.play_audio)
         self.Play_Screen.DELETE.activated[str].connect(self.delete_recording)
         
@@ -164,92 +168,119 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentIndex( 2 )
         
     
-    def _play(self, file):  #play audio
+    def _play(self, _file):  #play audio
         self.Play_Screen.RECORDINGS.setEnabled(False)   
         self.Play_Screen.DELETE.setEnabled(False)
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
-        self.Play_Screen.STOP.setEnabled(True)
         
-        tab = music_utils.get_tab(file)
+        tab = music_utils.get_tab(_file)
         self.Play_Screen.TAB.setGeometry(50,50,700,50)
         self.Play_Screen.TAB.setText(tab)
-        music_utils.play(file) 
+        music_utils.play(_file) 
         
-        self.Play_Screen.STOP.setEnabled(False)
         self.Play_Screen.RECORDINGS.setEnabled(True)
         self.Play_Screen.DELETE.setEnabled(True)
         self.Home_Screen.RECORD.setEnabled(True)
         self.Empty_Home_Screen.RECORD.setEnabled(True)
         
-    def _record(self, sec): #records audio file 
-        self.recording_lbl.setText("RECORDING")        
-        self.Play_Screen.RECORDINGS.setEnabled(False)
-        self.Play_Screen.DELETE.setEnabled(False)       
-        self.Home_Screen.RECORD.setEnabled(False)
-        self.Empty_Home_Screen.RECORD.setEnabled(False)
+    def getText(self):
+        text, okPressed = QInputDialog.getText(self, "Get text","Your name:", QLineEdit.Normal, "")
+        if okPressed:
+            return text 
+        else:
+            self.recording_lbl.setText("")        
+            self.Play_Screen.RECORDINGS.setEnabled(True)
+            self.Play_Screen.DELETE.setEnabled(True) 
+            self.Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.PLAYSCREEN.setEnabled(True)
+            self.Empty_Home_Screen.PLAYSCREEN.setVisible(True)  
         
-        notes, norm_len, r, p, stream = music_utils.record(sec)
-        #Current working dir
-        cwd = music_utils.os.getcwd()
-        existing_files = music_utils.os.listdir(cwd + "\Recordings")
-        
-        file, okPressed = QInputDialog.getText(self, "File Name","Enter name of file:", QLineEdit.Normal, "")
-        file = file + '.wav'
-        if okPressed and file != '':
-            while file in existing_files:
-                print('This file name already in use!')
-                file, okPressed = QInputDialog.getText(self, "File Name","Enter name of file:", QLineEdit.Normal, "")
-                file_name = file + '.wav'
+    def getTextError(self):
+        text, okPressed = QInputDialog.getText(self, "ERROR!","Enter different name:", QLineEdit.Normal, "")
+        if okPressed:
+            return text 
+        else:
+            self.recording_lbl.setText("")        
+            self.Play_Screen.RECORDINGS.setEnabled(True)
+            self.Play_Screen.DELETE.setEnabled(True) 
+            self.Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.PLAYSCREEN.setEnabled(True)
+            self.Empty_Home_Screen.PLAYSCREEN.setVisible(True)         
 
-        file = music_utils.create_file(file_name, notes, norm_len, r, p, stream)
-        
-        self.recording_lbl.setText("")        
-        self.Play_Screen.RECORDINGS.setEnabled(True)
-        self.Play_Screen.DELETE.setEnabled(True) 
-        self.Home_Screen.RECORD.setEnabled(True)
-        self.Empty_Home_Screen.RECORD.setEnabled(True)
-        self.Empty_Home_Screen.PLAYSCREEN.setEnabled(True)
-        self.Empty_Home_Screen.PLAYSCREEN.setVisible(True)        
-        
-        self.Play_Screen.RECORDINGS.addItem(file)
-        self.Play_Screen.DELETE.addItem(file)
-        
-        
     def _delete(self, _file):    #deletes audio files        
         music_utils.delete(_file)
         idx = self.Play_Screen.DELETE.currentIndex()
         self.Play_Screen.RECORDINGS.removeItem(idx)
         self.Play_Screen.DELETE.removeItem(idx)
                
-    def play_audio(self, file):  #creates thread for playing audio files  
-        worker = Worker(self._play,file)     
+    def play_audio(self, _file):  #creates thread for playing audio files  
+        worker = Worker(self._play, _file)     
         self.threadpool.start(worker)
-    
+       
     def record(self): #creates thread for recording
+       
         if self.stack.currentIndex() == 0:
             sec = self.Home_Screen.RECORDING_TIME.currentText()
         else:
             sec = self.Empty_Home_Screen.RECORDING_TIME.currentText()
-        worker = Worker(self._record,int(sec)) 
-        self.threadpool.start(worker)
+
+        self.recording_lbl.setText("RECORDED!")        
+        self.Play_Screen.RECORDINGS.setEnabled(False)
+        self.Play_Screen.DELETE.setEnabled(False)       
+        self.Home_Screen.RECORD.setEnabled(False)
+        self.Empty_Home_Screen.RECORD.setEnabled(False)
         
-    def stop(self): #creates thread for stopping recording
-        print("stop")
+        notes, norm_len, r, p, stream = music_utils.record(int(sec))
         
-    def delete_recording(self,file): #creates thread for deleting files
+        self.text = self.getText()       
+        self.text = self.text  + '.wav'
+        
+        cwd = music_utils.os.getcwd()
+        existing_files = music_utils.os.listdir(cwd + "\Recordings")
+        if self.text in existing_files or self.text == '.wav' or len(self.text) > 20:
+            while self.text in existing_files or self.text == '.wav' or len(self.text) > 20:
+                self.text = self.getTextError()       
+                self.text = self.text  + '.wav'
+            music_utils.create_file(self.text, notes, norm_len, r, p, stream)
+
+            self.recording_lbl.setText("")        
+            self.Play_Screen.RECORDINGS.setEnabled(True)
+            self.Play_Screen.DELETE.setEnabled(True) 
+            self.Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.PLAYSCREEN.setEnabled(True)
+            self.Empty_Home_Screen.PLAYSCREEN.setVisible(True)        
+            
+            self.Play_Screen.RECORDINGS.addItem(self.text)
+            self.Play_Screen.DELETE.addItem(self.text)
+        else:
+            music_utils.create_file(self.text, notes, norm_len, r, p, stream)
+    
+            self.recording_lbl.setText("")        
+            self.Play_Screen.RECORDINGS.setEnabled(True)
+            self.Play_Screen.DELETE.setEnabled(True) 
+            self.Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.PLAYSCREEN.setEnabled(True)
+            self.Empty_Home_Screen.PLAYSCREEN.setVisible(True)        
+            
+            self.Play_Screen.RECORDINGS.addItem(self.text)
+            self.Play_Screen.DELETE.addItem(self.text)
+        
+    def delete_recording(self, _file): #creates thread for deleting files
         
         choice = QMessageBox.question(self, 'Delete?',
                                       "Are you sure to delete?", 
                                       QMessageBox.Yes | QMessageBox.No)
 
         if choice == QMessageBox.Yes:
-            worker = Worker(self._delete,file) 
+            worker = Worker(self._delete, _file) 
             self.threadpool.start(worker)
         elif choice == QMessageBox.No:
             pass
-
-        
         
     def quit_app(self): #exits out of the app
         
