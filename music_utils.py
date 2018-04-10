@@ -160,36 +160,36 @@ def check_tab():
         pass
     
 def get_tab(_file):
-        #Current working dir
+    #Current working dir
     cwd = os.getcwd()
-
+    existing_tabs = os.listdir(cwd + '\Tabs')
+    json_file = _file[:-4] + '.json'
     if len(os.listdir(cwd + '\Tabs')) > 0:
-        with open(os.path.join(cwd + '\Tabs', 'tabs.json'), 'r') as f:
-            data = json.load(f)
-    
-        if _file in data.keys():
-            notes = []
-            count = 0
-            tab = ''
-            tab_dict = data[_file]
-            
-            #gets every fourth note
-            for v in tab_dict.values():
-                notes.append(v)
-            for i in notes:
-                if count == 3:
-                    tab = tab + i + ', '
-                    count = 0
-                else:
-                    count += 1
-               
-            return tab
+        if json_file in existing_tabs:
+            with open(os.path.join(cwd + '\Tabs', '%s' % (json_file)), 'r') as f:
+                data = json.load(f)
+        
+            if json_file in os.listdir(cwd + '\Tabs'):
+                notes = []
+                count = 0
+                tab = ''         
+                #gets every fourth note
+                for v in data.values():
+                    notes.append(v)
+                for i in notes:
+                    if count == 3:
+                        tab = tab + i + ', '
+                        count = 0
+                    else:
+                        count += 1              
+                return tab
                        
         else:
             tab = 'Tab does not exist'
             return tab
     else:
-        pass
+        tab = 'There is no existing tabs'
+        return tab
     
 
 def record(_recording_lenght):        
