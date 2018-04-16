@@ -30,37 +30,101 @@ class Worker(QRunnable):
 class UIPlay(QWidget):
     def __init__(self, parent=None):
         super(UIPlay, self).__init__(parent)
-        self.HOMESCREEN = QPushButton('Go to home', self)
-        self.HOMESCREEN.move(100, 350)
+       
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
         
-        self.TAB = QLabel('Tab', self)         
-        self.TAB.move(50, 50)
+        self.HOMESCREEN = QPushButton('Go to home', self)
+        self.HOMESCREEN.resize(self.HOMESCREEN.sizeHint())
+        
+        self.SMALLE = QLabel('', self)         
+        self.B = QLabel('', self)         
+        self.G = QLabel('', self)         
+        self.D = QLabel('', self)         
+        self.A = QLabel('', self)         
+        self.E = QLabel('', self)         
+        
+        self.SMALLE2 = QLabel('', self)         
+        self.B2 = QLabel('', self)         
+        self.G2 = QLabel('', self)         
+        self.D2 = QLabel('', self)         
+        self.A2 = QLabel('', self)         
+        self.E2 = QLabel('', self) 
+        
+        self.space = QLabel('', self)
+   
+        newfont = QFont("Times", 14, QFont.Bold)
+        self.SMALLE.setFont(newfont)
+        self.B.setFont(newfont)
+        self.G.setFont(newfont)
+        self.D.setFont(newfont)
+        self.A.setFont(newfont)
+        self.E.setFont(newfont)
+                   
+        self.SMALLE2.setFont(newfont)
+        self.B2.setFont(newfont)
+        self.G2.setFont(newfont)
+        self.D2.setFont(newfont)
+        self.A2.setFont(newfont)
+        self.E2.setFont(newfont)  
+        
+        self.space.setFont(newfont)
         
         self.PLAY_LBL = QLabel('Play', self)
         self.DELETE_LBL = QLabel('Delete', self)
         
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
-        self.RECORDINGS = QComboBox(self)        
+        self.RECORDINGS = QComboBox(self) 
+        self.RECORDINGS.resize(self.RECORDINGS.sizeHint())
         self.DELETE = QComboBox(self) 
+        self.DELETE.resize(self.DELETE.sizeHint())
         
         for i in existing_files:
-            self.RECORDINGS.addItem(str(i))
-            self.DELETE.addItem(str(i))
-            
-        self.PLAY_LBL.move(200,325)
-        self.RECORDINGS.move(200, 350)  
-        self.DELETE_LBL.move(300,325)
-        self.DELETE.move(300, 350)
+            #only pulls the Wav files
+            if i[-4:] == '.wav':
+                self.RECORDINGS.addItem(str(i))
+                self.DELETE.addItem(str(i))
+               
+        self.grid.addWidget(self.SMALLE,1,1)
+        self.grid.addWidget(self.B,2,1)
+        self.grid.addWidget(self.G,3,1)
+        self.grid.addWidget(self.D,4,1)
+        self.grid.addWidget(self.A,5,1)
+        self.grid.addWidget(self.E,6,1)
+        self.grid.addWidget(self.space,7,1)        
+        self.grid.addWidget(self.SMALLE2,8,1)
+        self.grid.addWidget(self.B2,9,1)
+        self.grid.addWidget(self.G2,10,1)
+        self.grid.addWidget(self.D2,11,1)
+        self.grid.addWidget(self.A2,12,1)
+        self.grid.addWidget(self.E2,13,1)
+        
+        self.grid.addWidget(self.HOMESCREEN,14,0)
+        self.grid.addWidget(self.PLAY_LBL,14,2)
+        self.grid.addWidget(self.DELETE_LBL,14,6)
+        self.grid.addWidget(self.RECORDINGS,14,3)
+        self.grid.addWidget(self.DELETE,14,7)
+        
 
 class UIHome(QWidget):
     def __init__(self, parent=None):
         super(UIHome, self).__init__(parent)
+        
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+        
         self.PLAYSCREEN = QPushButton("Go to play", self)
-        self.PLAYSCREEN.move(100, 350)
+        self.PLAYSCREEN.resize(self.PLAYSCREEN.sizeHint())
+        self.grid.addWidget(self.PLAYSCREEN,0,1)
        
-        self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)         
-        self.RECORDING_LBL.move(250, 325)        
+        self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)   
+        self.RECORDING_LBL.resize(self.RECORDING_LBL.sizeHint())
+        self.grid.addWidget(self.RECORDING_LBL,1,0)
+        
+        self.RECORDED_LBL = QLabel('', self)   
+        self.RECORDED_LBL.resize(self.RECORDING_LBL.sizeHint())
+        self.grid.addWidget(self.RECORDED_LBL,2,0)
        
         self.RECORDING_TIME = QComboBox(self)
         self.RECORDING_TIME.addItem(str(5))
@@ -68,26 +132,38 @@ class UIHome(QWidget):
         self.RECORDING_TIME.addItem(str(15))
         self.RECORDING_TIME.addItem(str(20))
         self.RECORDING_TIME.addItem(str(25))
-        self.RECORDING_TIME.addItem(str(30))
-        
-        self.RECORDING_TIME.move(200, 325)
+        self.RECORDING_TIME.addItem(str(30))        
+        self.RECORDING_TIME.resize(self.RECORDING_TIME.sizeHint())
+        self.grid.addWidget(self.RECORDING_TIME,1,1)
         
         self.RECORD = QPushButton("Record!", self)
-        self.RECORD.move(200, 350)
+        self.RECORD.resize(self.RECORD.sizeHint())
+        self.grid.addWidget(self.RECORD,1,2)
         
         self.QUIT = QPushButton("Quit!", self)
-        self.QUIT.move(300, 350)
+        self.QUIT.resize(self.QUIT.sizeHint())
+        self.grid.addWidget(self.QUIT,2,1)
+        
         
 class UIEmptyHome(QWidget):
     def __init__(self, parent=None):
         super(UIEmptyHome, self).__init__(parent)
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+        
         self.PLAYSCREEN = QPushButton("Go to play", self)
-        self.PLAYSCREEN.move(100, 350)
+        self.PLAYSCREEN.resize(self.PLAYSCREEN.sizeHint())
         self.PLAYSCREEN.setEnabled(False)
         self.PLAYSCREEN.setVisible(False)
+        self.grid.addWidget(self.PLAYSCREEN,0,1)
        
-        self.SECONDS_LBL = QLabel('Lenght of recording (seconds)', self)         
-        self.SECONDS_LBL.move(250, 325)        
+        self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)   
+        self.RECORDING_LBL.resize(self.RECORDING_LBL.sizeHint())
+        self.grid.addWidget(self.RECORDING_LBL,1,0)
+        
+        self.RECORDED_LBL = QLabel('', self)   
+        self.RECORDED_LBL.resize(self.RECORDING_LBL.sizeHint())
+        self.grid.addWidget(self.RECORDED_LBL,2,0)
        
         self.RECORDING_TIME = QComboBox(self)
         self.RECORDING_TIME.addItem(str(5))
@@ -95,27 +171,28 @@ class UIEmptyHome(QWidget):
         self.RECORDING_TIME.addItem(str(15))
         self.RECORDING_TIME.addItem(str(20))
         self.RECORDING_TIME.addItem(str(25))
-        self.RECORDING_TIME.addItem(str(30))
-        self.RECORDING_TIME.move(200, 325)        
+        self.RECORDING_TIME.addItem(str(30))        
+        self.RECORDING_TIME.resize(self.RECORDING_TIME.sizeHint())
+        self.grid.addWidget(self.RECORDING_TIME,1,1)
         
         self.RECORD = QPushButton("Record!", self)
-        self.RECORD.move(200, 350)
+        self.RECORD.resize(self.RECORD.sizeHint())
+        self.grid.addWidget(self.RECORD,1,2)
         
         self.QUIT = QPushButton("Quit!", self)
-        self.QUIT.move(300, 350)
+        self.QUIT.resize(self.QUIT.sizeHint())
+        self.grid.addWidget(self.QUIT,2,1)
 
 #Main window of application
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.setGeometry(50, 50, 800, 500)
+        self.setGeometry(50, 50, 650, 500)
         self.setWindowTitle('Music Application')
         
         #setting threads
         self.threadpool = QThreadPool()
         
-        self.recording_lbl = QLabel('', self)         
-        self.recording_lbl.move(200, 375)
 
         self.Home_Screen = UIHome( self )
         self.Home_Screen.PLAYSCREEN.clicked.connect( self.play_screen )
@@ -142,11 +219,12 @@ class MainWindow(QMainWindow):
         #checks if there are existing recordings
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
+        
         if len(existing_files) == 0:
-            self.setWindowTitle("Home")
+            self.setWindowTitle("Music Application / Home")
             self.stack.setCurrentIndex( 1 )
         else:
-            self.setWindowTitle("Home")
+            self.setWindowTitle("Music Application / Home")
             self.stack.setCurrentIndex(0)
             
 
@@ -155,41 +233,98 @@ class MainWindow(QMainWindow):
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
         if len(existing_files) == 0:
-            self.setWindowTitle("Page2")
+            self.setWindowTitle("Music Application / Home")
             self.stack.setCurrentIndex( 1 )
         else:
-            self.setWindowTitle("Page1")
+            self.setWindowTitle("Music Application / Home")
             self.stack.setCurrentIndex(0)
             self.Empty_Home_Screen.PLAYSCREEN.setEnabled(False)
             self.Empty_Home_Screen.PLAYSCREEN.setVisible(False) 
         
     def play_screen(self):
-        self.setWindowTitle("Page2")
+        self.setWindowTitle("Music Application / Play")
         self.stack.setCurrentIndex( 2 )
         
     
     def _play(self, _file):  #play audio
-        self.Play_Screen.RECORDINGS.setEnabled(False)   
+        self.Play_Screen.RECORDINGS.setEnabled(False)
         self.Play_Screen.DELETE.setEnabled(False)
         self.Home_Screen.RECORD.setEnabled(False)
         self.Empty_Home_Screen.RECORD.setEnabled(False)
         
-        tab = music_utils.get_tab(_file)
-        self.Play_Screen.TAB.setGeometry(50,50,700,50)
-        self.Play_Screen.TAB.setText(tab)
-        music_utils.play(_file) 
+        e,B,G,D,A,E = music_utils.get_tab(_file)
         
-        self.Play_Screen.RECORDINGS.setEnabled(True)
-        self.Play_Screen.DELETE.setEnabled(True)
-        self.Home_Screen.RECORD.setEnabled(True)
-        self.Empty_Home_Screen.RECORD.setEnabled(True)
+        if len(e) < 81:            
+            self.Play_Screen.SMALLE.setGeometry(50,50,700,50)
+            self.Play_Screen.SMALLE.setText(e)
+            self.Play_Screen.B.setGeometry(50,65,700,50)
+            self.Play_Screen.B.setText(B)
+            self.Play_Screen.G.setGeometry(50,80,700,50)
+            self.Play_Screen.G.setText(G)
+            self.Play_Screen.D.setGeometry(50,95,700,50)
+            self.Play_Screen.D.setText(D)
+            self.Play_Screen.A.setGeometry(50,110,700,50)
+            self.Play_Screen.A.setText(A)
+            self.Play_Screen.E.setGeometry(50,125,700,50)
+            self.Play_Screen.E.setText(E)
+            
+            self.Play_Screen.SMALLE2.setText('')
+            self.Play_Screen.B2.setText('')   
+            self.Play_Screen.G2.setText('')
+            self.Play_Screen.D2.setText('')
+            self.Play_Screen.A2.setText('')
+            self.Play_Screen.E2.setText('')
+     
+            music_utils.play(_file) 
+            
+            self.Play_Screen.RECORDINGS.setEnabled(True)
+            self.Play_Screen.DELETE.setEnabled(True)
+            self.Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.RECORD.setEnabled(True)
+        elif len(e) > 80:   
+            half_way_point = len(e) / 2
+            half_way_point = int(half_way_point)
+            
+            self.Play_Screen.SMALLE.setGeometry(50,50,700,50)
+            self.Play_Screen.SMALLE.setText(e[:half_way_point])
+            self.Play_Screen.B.setGeometry(50,65,700,50)
+            self.Play_Screen.B.setText(B[:half_way_point])
+            self.Play_Screen.G.setGeometry(50,80,700,50)
+            self.Play_Screen.G.setText(G[:half_way_point])
+            self.Play_Screen.D.setGeometry(50,95,700,50)
+            self.Play_Screen.D.setText(D[:half_way_point])
+            self.Play_Screen.A.setGeometry(50,110,700,50)
+            self.Play_Screen.A.setText(A[:half_way_point])
+            self.Play_Screen.E.setGeometry(50,125,700,50)
+            self.Play_Screen.E.setText(E[:half_way_point])
+                        
+            self.Play_Screen.SMALLE2.setGeometry(50,150,700,50)
+            self.Play_Screen.SMALLE2.setText(e[half_way_point:])
+            self.Play_Screen.B2.setGeometry(50,165,700,50)
+            self.Play_Screen.B2.setText(B[half_way_point:])
+            self.Play_Screen.G2.setGeometry(50,180,700,50)
+            self.Play_Screen.G2.setText(G[half_way_point:])
+            self.Play_Screen.D2.setGeometry(50,195,700,50)
+            self.Play_Screen.D2.setText(D[half_way_point:])
+            self.Play_Screen.A2.setGeometry(50,210,700,50)
+            self.Play_Screen.A2.setText(A[half_way_point:])
+            self.Play_Screen.E2.setGeometry(50,225,700,50)
+            self.Play_Screen.E2.setText(E[half_way_point:])
+     
+            music_utils.play(_file) 
+            
+            self.Play_Screen.RECORDINGS.setEnabled(True)
+            self.Play_Screen.DELETE.setEnabled(True)
+            self.Home_Screen.RECORD.setEnabled(True)
+            self.Empty_Home_Screen.RECORD.setEnabled(True)
         
     def getText(self):
-        text, okPressed = QInputDialog.getText(self, "Get text","Your name:", QLineEdit.Normal, "")
+        text, okPressed = QInputDialog.getText(self, "Recording name","Enter name of recording:", QLineEdit.Normal, "")
         if okPressed:
             return text 
         else:
-            self.recording_lbl.setText("")        
+            self.Home_Screen.RECORDED_LBL.setText('')   
+            self.Empty_Home_Screen.RECORDED_LBL.setText('')      
             self.Play_Screen.RECORDINGS.setEnabled(True)
             self.Play_Screen.DELETE.setEnabled(True) 
             self.Home_Screen.RECORD.setEnabled(True)
@@ -202,7 +337,8 @@ class MainWindow(QMainWindow):
         if okPressed:
             return text 
         else:
-            self.recording_lbl.setText("")        
+            self.Home_Screen.RECORDED_LBL.setText('')   
+            self.Empty_Home_Screen.RECORDED_LBL.setText('') 
             self.Play_Screen.RECORDINGS.setEnabled(True)
             self.Play_Screen.DELETE.setEnabled(True) 
             self.Home_Screen.RECORD.setEnabled(True)
@@ -227,7 +363,8 @@ class MainWindow(QMainWindow):
         else:
             sec = self.Empty_Home_Screen.RECORDING_TIME.currentText()
 
-        self.recording_lbl.setText("RECORDED!")        
+        self.Home_Screen.RECORDED_LBL.setText('RECORDED!')   
+        self.Empty_Home_Screen.RECORDED_LBL.setText('RECORDED!')       
         self.Play_Screen.RECORDINGS.setEnabled(False)
         self.Play_Screen.DELETE.setEnabled(False)       
         self.Home_Screen.RECORD.setEnabled(False)
@@ -246,7 +383,8 @@ class MainWindow(QMainWindow):
                 self.text = self.text  + '.wav'
             music_utils.create_file(self.text, notes, norm_len, r, p, stream)
 
-            self.recording_lbl.setText("")        
+            self.Home_Screen.RECORDED_LBL.setText('')   
+            self.Empty_Home_Screen.RECORDED_LBL.setText('')         
             self.Play_Screen.RECORDINGS.setEnabled(True)
             self.Play_Screen.DELETE.setEnabled(True) 
             self.Home_Screen.RECORD.setEnabled(True)
@@ -259,7 +397,8 @@ class MainWindow(QMainWindow):
         else:
             music_utils.create_file(self.text, notes, norm_len, r, p, stream)
     
-            self.recording_lbl.setText("")        
+            self.Home_Screen.RECORDED_LBL.setText('')   
+            self.Empty_Home_Screen.RECORDED_LBL.setText('')        
             self.Play_Screen.RECORDINGS.setEnabled(True)
             self.Play_Screen.DELETE.setEnabled(True) 
             self.Home_Screen.RECORD.setEnabled(True)

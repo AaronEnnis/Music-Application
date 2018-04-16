@@ -118,14 +118,15 @@ def remove_key(d, key):
     del r[key]
     return r
         
-def delete(_file,_tab):
+def delete(_file):
     #Current working dir
     cwd = os.getcwd()
     existing_files = os.listdir(cwd + '\Recordings')
-    
+    tab = _file[:-4]
+    tab = tab + '.json'
     if _file in existing_files:
         file_path = os.path.join(cwd + '\Recordings', _file)
-        tab_file_path = os.path.join(cwd + '\Tabs', _tab)
+        tab_file_path = os.path.join(cwd + '\Tabs', tab)
         if os.path.isfile(file_path) and os.path.isfile(tab_file_path):
             os.unlink(file_path)
             os.unlink(tab_file_path)
@@ -160,6 +161,13 @@ def check_tab():
         pass
     
 def get_tab(_file):
+    #strings on the guitar
+    e = ''  
+    B = ''
+    G = ''
+    D = ''
+    A = ''
+    E = ''
     #Current working dir
     cwd = os.getcwd()
     existing_tabs = os.listdir(cwd + '\Tabs')
@@ -172,24 +180,319 @@ def get_tab(_file):
             if json_file in os.listdir(cwd + '\Tabs'):
                 notes = []
                 count = 0
-                tab = ''         
+                tab = []
                 #gets every fourth note
                 for v in data.values():
                     notes.append(v)
                 for i in notes:
                     if count == 3:
-                        tab = tab + i + ', '
+                        tab.append(i)
                         count = 0
                     else:
-                        count += 1              
-                return tab
-                       
+                        count += 1   
+                #Creating the tab        
+                for n in tab:   
+                    if n[0] == 'A':                 #Note
+                        if n[-1:] == '3':           #Octave
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '0 '
+                            E = E + '- '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '2 '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '5 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'A#':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '1 '
+                            E = E + '- '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '3 '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '6 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'B':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '2 '
+                            E = E + '- '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '4 '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '7 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'C':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '3 '
+                            E = E + '- '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '5 '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '8 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'C#':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '4 '
+                            E = E + '- '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '6 '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '9 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'D':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '0 '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '3 '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '10 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'D#':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '1 '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '4 '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '11 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'E':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '0 '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '2 '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '0 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'F':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '1 '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '3 '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '1 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- ' 
+                            
+                    elif n[0] == 'F#':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '2 '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '4 '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '2 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'G':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '3 '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '0 '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '3 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                            
+                    elif n[0] == 'G#':
+                        if n[-1:] == '3':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '4':
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '1 '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- '
+                        elif n[-1:] == '5':
+                            e = e + '4 '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- ' 
+                    elif n[0] == '-': 
+                            e = e + '- '
+                            B = B + '- '
+                            G = G + '- '
+                            D = D + '- '
+                            A = A + '- '
+                            E = E + '- ' 
+                         
+                return e,B,G,D,A,E
+                        
         else:
-            tab = 'Tab does not exist'
-            return tab
+            e = e + '-'
+            B = B + '-'
+            G = G + 'No Tab Found'
+            D = D + '-'
+            A = A + '-'
+            E = E + '-' 
+            return e,B,G,D,A,E
     else:
-        tab = 'There is no existing tabs'
-        return tab
+        e = e + '-'
+        B = B + '-'
+        G = G + 'No Tab Found'
+        D = D + '-'
+        A = A + '-'
+        E = E + '-' 
+        return e,B,G,D,A,E
     
 
 def record(_recording_lenght):        
