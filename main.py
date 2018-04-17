@@ -101,8 +101,8 @@ class UIPlay(QWidget):
         self.grid.addWidget(self.E2,13,1)
         
         self.grid.addWidget(self.HOMESCREEN,14,0)
-        self.grid.addWidget(self.PLAY_LBL,14,2)
-        self.grid.addWidget(self.DELETE_LBL,14,6)
+        self.grid.addWidget(self.PLAY_LBL,13,3)
+        self.grid.addWidget(self.DELETE_LBL,13,7)
         self.grid.addWidget(self.RECORDINGS,14,3)
         self.grid.addWidget(self.DELETE,14,7)
         
