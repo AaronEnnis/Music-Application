@@ -255,17 +255,11 @@ class MainWindow(QMainWindow):
         e,B,G,D,A,E = music_utils.get_tab(_file)
         
         if len(e) < 81:            
-            self.Play_Screen.SMALLE.setGeometry(50,50,700,50)
             self.Play_Screen.SMALLE.setText(e)
-            self.Play_Screen.B.setGeometry(50,65,700,50)
             self.Play_Screen.B.setText(B)
-            self.Play_Screen.G.setGeometry(50,80,700,50)
             self.Play_Screen.G.setText(G)
-            self.Play_Screen.D.setGeometry(50,95,700,50)
             self.Play_Screen.D.setText(D)
-            self.Play_Screen.A.setGeometry(50,110,700,50)
             self.Play_Screen.A.setText(A)
-            self.Play_Screen.E.setGeometry(50,125,700,50)
             self.Play_Screen.E.setText(E)
             
             self.Play_Screen.SMALLE2.setText('')
@@ -285,32 +279,20 @@ class MainWindow(QMainWindow):
             half_way_point = len(e) / 2
             half_way_point = int(half_way_point)
             
-            self.Play_Screen.SMALLE.setGeometry(50,50,700,50)
             self.Play_Screen.SMALLE.setText(e[:half_way_point])
-            self.Play_Screen.B.setGeometry(50,65,700,50)
             self.Play_Screen.B.setText(B[:half_way_point])
-            self.Play_Screen.G.setGeometry(50,80,700,50)
             self.Play_Screen.G.setText(G[:half_way_point])
-            self.Play_Screen.D.setGeometry(50,95,700,50)
             self.Play_Screen.D.setText(D[:half_way_point])
-            self.Play_Screen.A.setGeometry(50,110,700,50)
             self.Play_Screen.A.setText(A[:half_way_point])
-            self.Play_Screen.E.setGeometry(50,125,700,50)
             self.Play_Screen.E.setText(E[:half_way_point])
-                        
-            self.Play_Screen.SMALLE2.setGeometry(50,150,700,50)
+                      
             self.Play_Screen.SMALLE2.setText(e[half_way_point:])
-            self.Play_Screen.B2.setGeometry(50,165,700,50)
             self.Play_Screen.B2.setText(B[half_way_point:])
-            self.Play_Screen.G2.setGeometry(50,180,700,50)
             self.Play_Screen.G2.setText(G[half_way_point:])
-            self.Play_Screen.D2.setGeometry(50,195,700,50)
             self.Play_Screen.D2.setText(D[half_way_point:])
-            self.Play_Screen.A2.setGeometry(50,210,700,50)
             self.Play_Screen.A2.setText(A[half_way_point:])
-            self.Play_Screen.E2.setGeometry(50,225,700,50)
             self.Play_Screen.E2.setText(E[half_way_point:])
-     
+            
             music_utils.play(_file) 
             
             self.Play_Screen.RECORDINGS.setEnabled(True)

@@ -11,21 +11,9 @@ import wave, struct, os, time, json
 import scipy.io.wavfile
 import pyaudio
 import numpy as np
-import matplotlib.pyplot as plt
 from array import array
 from struct import pack
 
-#elements in data (16-bit PCM	-32768	+32767	int16)
-def getData(_file): 
-    #Current working dir
-    cwd = os.getcwd()
-    existing_files = os.listdir(cwd + '\Recordings')
-    if _file in existing_files:
-        rate, data = scipy.io.wavfile.read(os.path.join(cwd + '\Recordings', _file))
-        for i in data:
-            print(i)
-    else:
-        print('This file does not exist')
 
 def info(_file):
     #Current working dir
@@ -100,23 +88,6 @@ def play(_file):
     else:
         print('This file does not exist')
 
-#Displays audio data to graph    
-def display(_file,sec):
-    #Current working dir
-    cwd = os.getcwd()
-    existing_files = os.listdir(cwd + '\Recordings')
-    if _file in existing_files:
-        rate, data = scipy.io.wavfile.read(os.path.join(cwd + '\Recordings', _file))
-        t = np.linspace(0, sec, len(data))   
-        plt.plot(t,data)    
-        plt.show()
-    else:
-        print('This file does not exist')  
-        
-def remove_key(d, key):
-    r = dict(d)
-    del r[key]
-    return r
         
 def delete(_file):
     #Current working dir
