@@ -254,7 +254,7 @@ class UIHome(QWidget):
         self.PLAYSCREEN.resize(self.PLAYSCREEN.sizeHint())
         self.grid.addWidget(self.PLAYSCREEN,0,1)
        
-        self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)   
+        self.RECORDING_LBL = QLabel('Length of recording (seconds)', self)   
         self.RECORDING_LBL.resize(self.RECORDING_LBL.sizeHint())
         self.grid.addWidget(self.RECORDING_LBL,1,0)
         
@@ -288,9 +288,6 @@ class UIHome(QWidget):
         self.RECORD.setFont(button_font)
         self.QUIT.setFont(button_font)
         
-
-        
-        
 class UIEmptyHome(QWidget):
     def __init__(self, parent=None):
         super(UIEmptyHome, self).__init__(parent)
@@ -303,7 +300,7 @@ class UIEmptyHome(QWidget):
         self.PLAYSCREEN.setVisible(False)
         self.grid.addWidget(self.PLAYSCREEN,0,1)
        
-        self.RECORDING_LBL = QLabel('Lenght of recording (seconds)', self)   
+        self.RECORDING_LBL = QLabel('Length of recording (seconds)', self)   
         self.RECORDING_LBL.resize(self.RECORDING_LBL.sizeHint())
         self.grid.addWidget(self.RECORDING_LBL,1,0)
         
@@ -343,6 +340,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setGeometry(50, 50, 650, 500)
         self.setWindowTitle('Music Application')
+        self.setStyleSheet('QMainWindow{background-color: darkgray;border: 5px solid black;}')
         
         #setting threads
         self.threadpool = QThreadPool()
@@ -718,7 +716,7 @@ if __name__ == '__main__':
         app = QApplication(sys.argv)
     else:
         app = QApplication.instance() 
-    
+
     w = MainWindow()
     w.show()
     sys.exit(app.exec_())
