@@ -36,9 +36,9 @@ class UIPlay(QWidget):
         
         self.HOMESCREEN = QPushButton('Go to home', self)
         self.HOMESCREEN.resize(self.HOMESCREEN.sizeHint())
-        
+                
 
-        self.SMALLE_LBL = QLabel('', self)         
+        self.SMALLE_LBL = QLabel('', self)         #Creating the strongs for the tab
         self.B_LBL = QLabel('', self)         
         self.G_LBL = QLabel('', self)         
         self.D_LBL = QLabel('', self)         
@@ -98,6 +98,9 @@ class UIPlay(QWidget):
         self.space2 = QLabel('', self)
         
         newfont = QFont("Times", 14, QFont.Bold)
+        button_font = QFont("Times", 12, QFont.Bold)    #setting fonts of the buttons, labels and tab
+        
+        self.HOMESCREEN.setFont(button_font)
         
         self.SMALLE_LBL.setFont(newfont)         
         self.B_LBL.setFont(newfont)         
@@ -159,14 +162,18 @@ class UIPlay(QWidget):
         self.space2.setFont(newfont)
         
         self.PLAY_LBL = QLabel('Play', self)
+        self.PLAY_LBL.setFont(button_font)
         self.DELETE_LBL = QLabel('Delete', self)
+        self.DELETE_LBL.setFont(button_font)
         
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
         self.RECORDINGS = QComboBox(self) 
+        self.RECORDINGS.setFont(button_font)
         self.RECORDINGS.resize(self.RECORDINGS.sizeHint())
         self.DELETE = QComboBox(self) 
         self.DELETE.resize(self.DELETE.sizeHint())
+        self.DELETE.setFont(button_font)
         
         for i in existing_files:
             #only pulls the Wav files
@@ -273,6 +280,16 @@ class UIHome(QWidget):
         self.QUIT.resize(self.QUIT.sizeHint())
         self.grid.addWidget(self.QUIT,2,1)
         
+        button_font = QFont("Times", 12, QFont.Bold)    #setting fonts of the buttons, labels and tab
+        self.PLAYSCREEN.setFont(button_font)
+        self.RECORDING_LBL.setFont(button_font)
+        self.RECORDED_LBL.setFont(button_font)
+        self.RECORDING_TIME.setFont(button_font)
+        self.RECORD.setFont(button_font)
+        self.QUIT.setFont(button_font)
+        
+
+        
         
 class UIEmptyHome(QWidget):
     def __init__(self, parent=None):
@@ -311,7 +328,15 @@ class UIEmptyHome(QWidget):
         self.QUIT = QPushButton("Quit!", self)
         self.QUIT.resize(self.QUIT.sizeHint())
         self.grid.addWidget(self.QUIT,2,1)
-
+        
+        button_font = QFont("Times", 12, QFont.Bold)    #setting fonts of the buttons, labels and tab
+        self.PLAYSCREEN.setFont(button_font)
+        self.RECORDING_LBL.setFont(button_font)
+        self.RECORDED_LBL.setFont(button_font)
+        self.RECORDING_TIME.setFont(button_font)
+        self.RECORD.setFont(button_font)
+        self.QUIT.setFont(button_font)
+        
 #Main window of application
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -361,10 +386,63 @@ class MainWindow(QMainWindow):
         #checks if there are existing recordings
         cwd = music_utils.os.getcwd() 
         existing_files = music_utils.os.listdir(cwd + '\Recordings')
-        if len(existing_files) == 0:
+        if len(existing_files) == 0: #empty hom screen
             self.setWindowTitle("Music Application / Home")
             self.stack.setCurrentIndex( 1 )
-        else:
+            
+            #clearing the tab when brought to empty home screen
+            self.Play_Screen.SMALLE.setText('')
+            self.Play_Screen.B.setText('')
+            self.Play_Screen.G.setText('')
+            self.Play_Screen.D.setText('')
+            self.Play_Screen.A.setText('')
+            self.Play_Screen.E.setText('')
+            self.Play_Screen.SMALLE2.setText('')
+            self.Play_Screen.B2.setText('')
+            self.Play_Screen.G2.setText('')
+            self.Play_Screen.D2.setText('')
+            self.Play_Screen.A2.setText('')
+            self.Play_Screen.E2.setText('')
+            self.Play_Screen.SMALLE3.setText('')
+            self.Play_Screen.B3.setText('')
+            self.Play_Screen.G3.setText('')
+            self.Play_Screen.D3.setText('')
+            self.Play_Screen.A3.setText('')
+            self.Play_Screen.E3.setText('')
+            
+            self.Play_Screen.SMALLE4.setText('')
+            self.Play_Screen.B4.setText('')   
+            self.Play_Screen.G4.setText('')
+            self.Play_Screen.D4.setText('')
+            self.Play_Screen.A4.setText('')
+            self.Play_Screen.E4.setText('')
+            self.Play_Screen.SMALLE5.setText('')
+            self.Play_Screen.B5.setText('')   
+            self.Play_Screen.G5.setText('')
+            self.Play_Screen.D5.setText('')
+            self.Play_Screen.A5.setText('')
+            self.Play_Screen.E5.setText('')
+            self.Play_Screen.SMALLE6.setText('')
+            self.Play_Screen.B6.setText('')   
+            self.Play_Screen.G6.setText('')
+            self.Play_Screen.D6.setText('')
+            self.Play_Screen.A6.setText('')
+            self.Play_Screen.E6.setText('')
+            
+            self.Play_Screen.SMALLE_LBL.setText('')
+            self.Play_Screen.B_LBL.setText('')   
+            self.Play_Screen.G_LBL.setText('')
+            self.Play_Screen.D_LBL.setText('')
+            self.Play_Screen.A_LBL.setText('')
+            self.Play_Screen.E_LBL.setText('')
+            
+            self.Play_Screen.SMALLE_LBL2.setText('')
+            self.Play_Screen.B_LBL2.setText('')   
+            self.Play_Screen.G_LBL2.setText('')
+            self.Play_Screen.D_LBL2.setText('')
+            self.Play_Screen.A_LBL2.setText('')
+            self.Play_Screen.E_LBL2.setText('')
+        else: #normal home screen
             self.setWindowTitle("Music Application / Home")
             self.stack.setCurrentIndex(0)
             self.Empty_Home_Screen.PLAYSCREEN.setEnabled(False)
