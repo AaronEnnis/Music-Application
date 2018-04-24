@@ -534,8 +534,8 @@ def record(_recording_lenght):
     print('recording')
     #normalizes the audio to reduce white noise
     audio_normalize = 'normalize.wav'
-    root = 'C:/Users/aaron/Desktop/Music-Application/Static'
-    normalize_rate, normalize_data = scipy.io.wavfile.read(os.path.join(root, audio_normalize)) 
+    cwd = os.getcwd()
+    normalize_rate, normalize_data = scipy.io.wavfile.read(os.path.join(cwd + '\Static', audio_normalize)) 
     snd_data = array('h', normalize_data)
     r.extend(snd_data)
     #records for x amount of seconds
