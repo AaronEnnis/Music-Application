@@ -23,7 +23,7 @@ Dependencies
 2.	PyAudio 	(Used to record and create the .wav files)
 3.	Numpy 		(Maths library for algorithms)
 4.	PyQt5 		(Framework for the user interface)
-5.      Scipy    	(Used to open wav files)
+5.	Scipy    	(Used to open wav files)
 
 # How to acquire these dependencies?
 
