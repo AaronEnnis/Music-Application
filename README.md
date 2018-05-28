@@ -2,7 +2,7 @@
 #Created by Aaron Ennis
 #C00190504
 
-Description:
+# Description
 
 This is my 4th year final project for college. It is a python desktop application.
 The application allows a user to record a piece of music with their guitar.
@@ -14,15 +14,18 @@ The application is based on the PyAudio and Numpy tools.
 
 It uses the FFT to transcribe the music. 
 
-How to run:
+# How to run:
+
+NOTE: This readme is for a windows system. Using this application on Linux or Mac systems requires different commands to download the dependencies.
 
 Dependencies
 1.	Python 3 	(Python 3 compiler to run the code)
 2.	PyAudio 	(Used to record and create the .wav files)
-3.	Numpy 	(Maths library for algorithms)
+3.	Numpy 		(Maths library for algorithms)
 4.	PyQt5 		(Framework for the user interface)
+5.      Scipy    	(Used to open wav files)
 
-How to acquire these dependencies?
+# How to acquire these dependencies?
 
 You can get any version of Python 3 on the official python.org website. 
 For this application, I wrote it using Python 3.6.
